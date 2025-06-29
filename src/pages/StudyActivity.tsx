@@ -105,7 +105,11 @@ const StudyActivity = () => {
 
     if (activityToUpdate && !activityToUpdate.completed) {
       activityToUpdate.completed = true;
+<<<<<<< HEAD
       updatedRoute.completedActivities = Nunber(updatedRoute.completedActivities) +1;
+=======
+      updatedRoute.completedActivities = Number(updatedRoute.completedActivities) +1;
+>>>>>>> 579c13e (Add desmark to StudyActivity)
 
       if (userData) {
         const key = `${routeId}_${activityId}`;
@@ -137,7 +141,11 @@ const StudyActivity = () => {
         if (studyTime >= 25) points += 5; // Bonus por sessão longa
       }
 
+<<<<<<< HEAD
       updateUserPoints(Nunber(points));
+=======
+      updateUserPoints(Number(points));
+>>>>>>> 579c13e (Add desmark to StudyActivity)
 
       toast.success(`Atividade concluída! +${points} pontos! 🏆`);
 
@@ -193,6 +201,10 @@ const StudyActivity = () => {
         <Footer />
       </div>
     );
+  }
+
+  const desmarkActivity = () => {
+    toast.success(`Em desenvolvimento! 😂`)
   }
 
   return (
@@ -356,6 +368,13 @@ const StudyActivity = () => {
                   <p className="opacity-90">
                     Parabéns pelo seu progresso! Continue assim.
                   </p>
+                  <Button
+                    onClick={desmarkActivity}
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Desmarcar como feito 
+                  </Button>
                 </CardContent>
               </Card>
             )}

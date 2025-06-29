@@ -195,6 +195,10 @@ const StudyActivity = () => {
     );
   }
 
+  const desmark = () => {
+    toast.success(`Em desenvolvimento! 😂`)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <Header />
@@ -356,6 +360,13 @@ const StudyActivity = () => {
                   <p className="opacity-90">
                     Parabéns pelo seu progresso! Continue assim.
                   </p>
+                  <Button
+                    onClick={desmark}
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Marcar como Concluída
+                  </Button>
                 </CardContent>
               </Card>
             )}

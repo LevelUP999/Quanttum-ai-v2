@@ -137,7 +137,7 @@ const StudyActivity = () => {
         if (studyTime >= 25) points += 5; // Bonus por sessão longa
       }
 
-      updateUserPoints(points);
+      updateUserPoints(Nunber(points));
 
       toast.success(`Atividade concluída! +${points} pontos! 🏆`);
 

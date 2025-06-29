@@ -105,7 +105,7 @@ const StudyActivity = () => {
 
     if (activityToUpdate && !activityToUpdate.completed) {
       activityToUpdate.completed = true;
-      updatedRoute.completedActivities += 1;
+      updatedRoute.completedActivities = Nunber(updatedRoute.completedActivities) +1;
 
       if (userData) {
         const key = `${routeId}_${activityId}`;

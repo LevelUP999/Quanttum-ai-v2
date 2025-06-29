@@ -108,24 +108,23 @@ const StudyActivity = () => {
       updatedRoute.completedActivities += 1;
 
       if (userData) {
-        const updatedRoutes = userData.routes.map((r: StudyRoute) =>
-          r.id === updatedRoute.id ? updatedRoute : r
-        );
-
-        await saveUserData({ routes: updatedRoutes }); // você já usa isso em StudyRoute
-      }
-
-
-      if (userData) {
         const key = `${routeId}_${activityId}`;
         const updatedNotes = {
           ...(userData.notes || {}),
           [key]: userNotes,
         };
 
-        await saveUserData({ ...userData, notes: updatedNotes });
-      }
+        // 👇 Junta todas as mudanças antes de salvar
+        const updatedUserData = {
+          ...userData,
+          routes: userData.routes.map((r: StudyRoute) =>
+            r.id === updatedRoute.id ? updatedRoute : r
+          ),
+          notes: updatedNotes,
+        };
 
+        await saveUserData(updatedUserData);
+      }
 
       setRoute(updatedRoute);
       setActivity(activityToUpdate);
@@ -142,7 +141,6 @@ const StudyActivity = () => {
 
       toast.success(`Atividade concluída! +${points} pontos! 🏆`);
 
-      // Voltar para a rota após 2 segundos
       setTimeout(() => {
         navigate(`/study-route/${routeId}`);
       }, 2000);

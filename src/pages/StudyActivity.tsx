@@ -105,7 +105,7 @@ const StudyActivity = () => {
 
     if (activityToUpdate && !activityToUpdate.completed) {
       activityToUpdate.completed = true;
-      updatedRoute.completedActivities = Number(updatedRoute.completedActivities) +1;
+      updatedRoute.completedActivities = Number(updatedRoute.completedActivities) + 1;
 
       if (userData) {
         const key = `${routeId}_${activityId}`;
@@ -195,9 +195,35 @@ const StudyActivity = () => {
     );
   }
 
-  const desmark = () => {
-    toast.success(`Em desenvolvimento! 😂`)
-  }
+  const desmark = async () => {
+    if (!route || !activity || !userData) return;
+
+    const updatedRoute = { ...route };
+    const activityToUpdate = updatedRoute.studyPlan.activities.find(a => a.id === activity.id);
+
+    if (activityToUpdate && activityToUpdate.completed) {
+      activityToUpdate.completed = false;
+      updatedRoute.completedActivities = Math.max(
+        0,
+        Number(updatedRoute.completedActivities) - 1
+      );
+
+      const updatedUserData = {
+        ...userData,
+        routes: userData.routes.map((r: StudyRoute) =>
+          r.id === updatedRoute.id ? updatedRoute : r
+        ),
+      };
+
+      await saveUserData(updatedUserData);
+
+      setRoute(updatedRoute);
+      setActivity(activityToUpdate);
+
+      toast.success('Atividade marcada como não concluída. ❌');
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
@@ -365,7 +391,7 @@ const StudyActivity = () => {
                     className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                   >
                     <CheckCircle className="w-4 h-4 mr-2" />
-                    Marcar como Concluída
+                    Marcar como Não Concluída
                   </Button>
                 </CardContent>
               </Card>

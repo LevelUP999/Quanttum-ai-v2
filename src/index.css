@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 47.4% 11.2%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 47.4% 11.2%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+    --primary: 262 83% 52%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 262 94% 84%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 262 83% 52%;
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222.2 47.4% 11.2%;
+    --sidebar-primary: 262 83% 52%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 262 94% 84%;
+    --sidebar-accent-foreground: 222.2 47.4% 11.2%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 262 83% 52%;
+  }
+
+  .dark :root {
+    --background: 17 17 27;
+    --foreground: 245 245 245;
+
+    --card: 28 28 40;
+    --card-foreground: 245 245 245;
+
+    --popover: 28 28 40;
+    --popover-foreground: 245 245 245;
+
+    --primary: 138 43 226;
+    --primary-foreground: 255 255 255;
+
+    --secondary: 106 28 177;
+    --secondary-foreground: 255 255 255;
+
+    --muted: 40 40 52;
+    --muted-foreground: 180 180 200;
+
+    --accent: 153 102 255;
+    --accent-foreground: 255 255 255;
+
+    --destructive: 255 85 85;
+    --destructive-foreground: 255 255 255;
+
+    --border: 60 60 70;
+    --input: 60 60 70;
+    --ring: 153 102 255;
+
+    --sidebar-background: 22 22 32;
+    --sidebar-foreground: 245 245 245;
+    --sidebar-primary: 138 43 226;
+    --sidebar-primary-foreground: 255 255 255;
+    --sidebar-accent: 45 45 60;
+    --sidebar-accent-foreground: 255 255 255;
+    --sidebar-border: 60 60 70;
+    --sidebar-ring: 153 102 255;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-grayBg dark:bg-slate-900 text-foreground font-poppins transition-colors duration-300;
+    background: linear-gradient(135deg, #F9F9F9 0%, #ffffff 50%, #F9F9F9 100%);
+  }
+
+  .dark body {
+    background: linear-gradient(135deg, #0f1729 0%, #1e293b 50%, #0f1729 100%);
+  }
+}
+
+@layer utilities {
+  .glass-effect {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-purple to-lightBlue bg-clip-text text-transparent;
+  }
+
+  .gradient-primary {
+    background: linear-gradient(135deg, #8A2BE2 0%, #33C3F0 100%);
+  }
+
+  .gradient-secondary {
+    background: linear-gradient(135deg, #AB7DF5 0%, #33C3F0 100%);
+  }
+
+  .gradient-dark {
+    background: linear-gradient(135deg, #6A1CB1 0%, #8A2BE2 100%);
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-lg;
+  }
+
+  .card-gradient {
+    background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(171,125,245,0.1) 100%);
+    border: 1px solid rgba(138,43,226,0.2);
+  }
+
+  .dark .card-gradient {
+    background: linear-gradient(135deg, rgba(30,41,59,0.9) 0%, rgba(106,28,177,0.2) 100%);
+    border: 1px solid rgba(138,43,226,0.3);
+  }
+
+  .btn-gradient {
+    background: linear-gradient(135deg, #8A2BE2 0%, #33C3F0 100%);
+    background-size: 200% 200%;
+    transition: all 0.3s ease;
+  }
+
+  .btn-gradient:hover {
+    background-position: right center;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(138,43,226,0.3);
+  }
+
+  .header-bg {
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(138,43,226,0.1);
+  }
+
+  .dark .header-bg {
+    background: rgba(15,23,42,0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(138,43,226,0.2);
+  }
+}

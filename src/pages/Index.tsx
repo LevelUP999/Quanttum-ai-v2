@@ -40,7 +40,7 @@ const Index = () => {
                 variant="outline"
                 size="lg"
                 className="px-8 py-4 text-lg font-semibold hover-lift w-full sm:w-auto text-black"
-                onClick={document.querySelector(".functionalTutorialSpray")?.scrollIntoView({ behavior: "smooth" });}
+                onClick={() => {document.querySelector(".functionalTutorialSpray")?.scrollIntoView({ behavior: "smooth" });}}
               >
                 Ver Como Funciona
               </Button>

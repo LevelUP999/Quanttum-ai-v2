@@ -40,13 +40,14 @@ const Index = () => {
                 variant="outline"
                 size="lg"
                 className="px-8 py-4 text-lg font-semibold hover-lift w-full sm:w-auto text-black"
+                onClick={document.querySelector(".functionalTutorialSpray")?.scrollIntoView({ behavior: "smooth" });}
               >
                 Ver Como Funciona
               </Button>
             </div>
           </div>
 
-          <div className="mt-16 animate-float">
+          <div className="mt-16 animate-float functionalTutorialSpray">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 dark:from-primary/30 dark:to-accent/30 rounded-3xl blur-3xl"></div>
               <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl">

@@ -134,7 +134,7 @@ const StudyRoute = () => {
   const progressPercentage = Math.round((route.completedActivities / route.activities) * 100);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:via-black dark:to-violet-900 dark:from-violet-900 dark:text-white">
       <Header />
 
       <div className="container mx-auto px-4 py-8">
@@ -142,7 +142,7 @@ const StudyRoute = () => {
         <Button
           variant="outline"
           onClick={() => navigate('/dashboard')}
-          className="mb-6 hover-lift"
+          className="mb-6 hover-lift dark:bg-[#1a1a1a]"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar ao Dashboard
@@ -243,6 +243,7 @@ const StudyRoute = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => navigate(`/study-activity/${route.id}/${activity.id}`)}
+                      className='dark:bg-[#1a1a1a] hover:opacity-30 transition hover:scale-[1.030]'
                     >
                       <ExternalLink className="w-4 h-4 mr-1" />
                       Estudar Conteúdo

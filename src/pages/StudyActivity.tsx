@@ -235,7 +235,7 @@ const StudyActivity = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:via-black dark:to-violet-900 dark:from-violet-900 dark:text-white">
       <Header />
 
       <div className="container mx-auto px-4 py-8">
@@ -243,7 +243,7 @@ const StudyActivity = () => {
         <Button
           variant="outline"
           onClick={() => navigate(`/study-route/${routeId}`)}
-          className="mb-6 hover-lift"
+          className="mb-6 hover-lift dark:bg-[#1a1a1a]"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar à Rota
@@ -271,7 +271,7 @@ const StudyActivity = () => {
             <Badge className={getDifficultyColor(activity.difficulty)}>
               {activity.difficulty}
             </Badge>
-            <Badge variant="outline">
+            <Badge variant="outline" className='dark:text-white'>
               <Clock className="w-4 h-4 mr-1" />
               {activity.duration}
             </Badge>
@@ -355,9 +355,9 @@ const StudyActivity = () => {
                   placeholder="Digite suas anotações aqui..."
                   value={userNotes}
                   onChange={(e) => setUserNotes(e.target.value)}
-                  className="min-h-[200px]"
+                  className="min-h-[200px] dark:text-black"
                 />
-                <Button onClick={saveNotes} variant="outline" className="w-full">
+                <Button onClick={saveNotes} variant="outline" className="w-full dark:text-black">
                   Salvar Anotações
                 </Button>
               </CardContent>

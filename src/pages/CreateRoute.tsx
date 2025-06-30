@@ -214,7 +214,7 @@ IMPORTANTE: Seja muito específico sobre ${formData.subject}. O conteúdo deve s
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:via-black dark:to-violet-900 dark:from-violet-900 dark:text-white">
       <Header />
 
       <div className="container mx-auto px-4 py-8">
@@ -242,23 +242,23 @@ IMPORTANTE: Seja muito específico sobre ${formData.subject}. O conteúdo deve s
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="subject" className="text-base font-medium">
-                  O que você quer estudar? *
+                  O que você quer estudar? <strong className="text-violet-600">*</strong>
                 </Label>
                 <Textarea
                   id="subject"
                   placeholder="Ex: Matemática para ENEM, Programação em Python, Inglês para conversação..."
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  className="min-h-[100px]"
+                  className="min-h-[100px] text-black"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="dailyTime" className="text-base font-medium">
-                  Quanto tempo disponível por dia? *
+                  Quanto tempo disponível por dia? <strong className="text-violet-600">*</strong>
                 </Label>
                 <Select value={formData.dailyTime} onValueChange={(value) => setFormData({ ...formData, dailyTime: value })}>
-                  <SelectTrigger>
+                  <SelectTrigger className='text-black'>
                     <SelectValue placeholder="Selecione o tempo disponível" />
                   </SelectTrigger>
                   <SelectContent>
@@ -274,10 +274,10 @@ IMPORTANTE: Seja muito específico sobre ${formData.subject}. O conteúdo deve s
 
               <div className="space-y-2">
                 <Label htmlFor="dedication" className="text-base font-medium">
-                  Nível de dedicação *
+                  Nível de dedicação <strong className="text-violet-600">*</strong>
                 </Label>
                 <Select value={formData.dedication} onValueChange={(value) => setFormData({ ...formData, dedication: value })}>
-                  <SelectTrigger>
+                  <SelectTrigger className='text-black'>
                     <SelectValue placeholder="Selecione seu nível de dedicação" />
                   </SelectTrigger>
                   <SelectContent>

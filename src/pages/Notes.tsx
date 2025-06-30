@@ -93,14 +93,14 @@ const Notes = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 dark:via-black dark:to-violet-900 dark:from-violet-900 dark:text-white">
       <Header />
 
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
-            <Button variant="outline" onClick={() => navigate('/dashboard')} className="hover-lift">
+            <Button variant="outline" onClick={() => navigate('/dashboard')} className="hover-lift dark:bg-[#1a1a1a]">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar ao Dashboard
             </Button>
@@ -120,7 +120,7 @@ const Notes = () => {
               placeholder="Buscar anotações..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 dark:bg-[#1a1a1a]"
             />
           </div>
         </div>
@@ -140,7 +140,7 @@ const Notes = () => {
               </p>
               {notes.length === 0 && (
                 <Button onClick={() => navigate('/dashboard')}>
-                  <BookOpen className="w-4 h-4 mr-2" />
+                  <BookOpen className="w-4 h-4 mr-2 dark:bg-[#1a1a1a]" />
                   Começar a Estudar
                 </Button>
               )}
@@ -163,7 +163,7 @@ const Notes = () => {
                     </div>
 
                     <div className="flex items-center space-x-2">
-                      <Badge variant="outline" className="flex items-center space-x-1">
+                      <Badge variant="outline" className="flex items-center space-x-1 dark:text-white">
                         <Calendar className="w-3 h-3" />
                         <span>{note.savedAt}</span>
                       </Badge>
@@ -172,7 +172,7 @@ const Notes = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => deleteNote(note.routeId, note.activityId)}
-                        className="text-destructive hover:text-destructive"
+                        className="text-destructive hover:text-destructive dark:bg-[#1a1a1a] hover:opacity-30 transition hover:scale-[1.030]"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -191,6 +191,7 @@ const Notes = () => {
                     onClick={() => goToActivity(note.routeId, note.activityId)}
                     variant="outline"
                     size="sm"
+                    className='dark:bg-[#1a1a1a] hover:opacity-30 transition hover:scale-[1.030]'
                   >
                     Ver Atividade Completa
                   </Button>

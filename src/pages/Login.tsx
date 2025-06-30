@@ -81,6 +81,7 @@ const Login = () => {
                       value={loginData.email}
                       onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                       required
+                      className='dark:text-black'
                     />
                   </div>
 
@@ -93,6 +94,7 @@ const Login = () => {
                       value={loginData.password}
                       onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                       required
+                      className='dark:text-black'
                     />
                   </div>
 
@@ -117,6 +119,7 @@ const Login = () => {
                       value={registerData.name}
                       onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
                       required
+                      className='dark:text-black'
                     />
                   </div>
 
@@ -129,6 +132,7 @@ const Login = () => {
                       value={registerData.email}
                       onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
                       required
+                      className='dark:text-black'
                     />
                   </div>
 
@@ -141,6 +145,7 @@ const Login = () => {
                       value={registerData.password}
                       onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
                       required
+                      className='dark:text-black'
                     />
                   </div>
 

@@ -31,7 +31,7 @@ const Header: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={toggleTheme}
-              className="p-2 dark:text-black"
+              className="p-2 dark:text-white dark:bg-[#1a1a1a]"
             >
               {theme === 'light' ? (
                 <Moon className="w-4 h-4" />
@@ -51,10 +51,10 @@ const Header: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => navigate('/notes')}
-                  className="flex items-center space-x-2"
+                  className="flex items-center space-x-2 dark:bg-[#1a1a1a]"
                 >
-                  <StickyNote className="w-4 h-4" />
-                  <span>Anotações</span>
+                  <StickyNote className="w-4 h-4 dark:text-white" />
+                  <span className='dark:text-white'>Anotações</span>
                 </Button>
 
                 <div className="flex items-center space-x-2">
@@ -66,10 +66,10 @@ const Header: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={handleLogout}
-                  className="flex items-center space-x-2"
+                  className="flex items-center space-x-2 dark:bg-[#1a1a1a]"
                 >
-                  <LogOut className="w-4 h-4" />
-                  <span>Sair</span>
+                  <LogOut className="w-4 h-4 dark:text-white" />
+                  <span className='dark:text-white'>Sair</span>
                 </Button>
               </>
             ) : (

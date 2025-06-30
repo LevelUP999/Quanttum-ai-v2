@@ -56,13 +56,13 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:via-black dark:to-violet-900 dark:from-violet-900">
       <Header />
 
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">
+          <h1 className="text-4xl font-bold mb-2 dark:text-white">
             Olá, {user?.name}! 👋
           </h1>
           <p className="text-xl text-muted-foreground mb-4">
@@ -115,7 +115,7 @@ const Dashboard = () => {
 
         {/* Study Routes Section */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl font-bold">Suas Rotas de Estudo</h2>
+          <h2 className="text-3xl font-bold dark:text-white">Suas Rotas de Estudo</h2>
           <Link to="/create-route">
             <Button className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 hover-lift">
               <Plus className="w-5 h-5 mr-2" />

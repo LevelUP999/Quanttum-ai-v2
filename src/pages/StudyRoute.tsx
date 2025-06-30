@@ -92,7 +92,7 @@ const StudyRoute = () => {
 
       // Pontuação
       const points = activity.difficulty === 'Difícil' ? 15 : activity.difficulty === 'Médio' ? 10 : 5;
-      updateUserPoints(points);
+      updateUserPoints(Number(points));
 
       toast.success(`Atividade concluída! +${points} pontos! 🎉`);
     }

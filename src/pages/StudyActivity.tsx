@@ -220,6 +220,15 @@ const StudyActivity = () => {
       setRoute(updatedRoute);
       setActivity(activityToUpdate);
 
+      let points = activity.difficulty === 'Difícil' ? 15 : activity.difficulty === 'Médio' ? 10 : 5;
+
+      if (studyStartTime) {
+        const studyTime = (new Date().getTime() - studyStartTime.getTime()) / (1000 * 60); // em minutos
+        if (studyTime >= 25) points += 5; // Bonus por sessão longa
+      }
+
+      updateUserPoints(Number(points) * -1);
+
       toast.success('Atividade marcada como não concluída. ❌');
     }
   };

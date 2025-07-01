@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "server": "node server.cjs",
-    "client": "vite"
+    "client": "vite",
+    "netlify": "netlify dev"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

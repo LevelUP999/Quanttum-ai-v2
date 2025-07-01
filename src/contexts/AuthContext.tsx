@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userData, setUserData] = useState<any>(null);
 
   const login = async (email: string, password: string) => {
-    const res = await fetch('/api/login', {
+    const res = await fetch('/.netlify/functions/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -45,7 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (name: string, email: string, password: string) => {
-    const res = await fetch('/api/register', {
+    const res = await fetch('/.netlify/functions/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password }),
@@ -65,7 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateUserPoints = async (points: number) => {
     if (!user) return;
-    const res = await fetch('/api/update-points', {
+    const res = await fetch('/.netlify/functions/update-points', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: user.email, points }),
@@ -79,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const saveUserData = async (newData: any) => {
     if (!user) return;
-    const res = await fetch('/api/save-user-data', {
+    const res = await fetch('/.netlify/functions/save-user-data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: user.email, newData }),

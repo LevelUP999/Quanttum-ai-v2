@@ -63,7 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         'Content-Type': 'application/json',
         'X-Master-Key': API_KEY,
       },
-      body: JSON.stringify(record),
+      body: JSON.stringify({ record }),
     });
   };
 

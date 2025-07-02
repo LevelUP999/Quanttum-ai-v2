@@ -28,6 +28,27 @@ app.get("/*", (req, res) => {
   res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
 
+// Registrar novo usuário
+app.post("/api/register", (req, res) => {
+  const { email, password, name } = req.body;
+  const data = JSON.parse(fs.readFileSync(DB_PATH, "utf-8"));
+
+  if (data.users[email]) {
+    return res.status(400).json({ error: "Usuário já existe" });
+  }
+
+  data.users[email] = {
+    name,
+    password,
+    points: 0,
+    routes: [],
+    notes: []
+  };
+
+  fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
+  res.json({ message: "Usuário registrado com sucesso" });
+});
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));

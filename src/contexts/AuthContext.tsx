@@ -1,4 +1,10 @@
 import React, { createContext, useContext, useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+// Supabase config
+const supabaseUrl = 'https://jfrybckxwmqryfaewikr.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmcnliY2t4d21xcnlmYWV3aWtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzcyNTksImV4cCI6MjA2NzA1MzI1OX0.VXJI3M-_CToOC-5chRYmOYGuhsyFp1yZEcTc6qGaOFc';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 interface User {
   id: string;
@@ -19,7 +25,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error('useAuth must be used within AuthProvider');
@@ -31,31 +36,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userData, setUserData] = useState<any>(null);
 
   const login = async (email: string, password: string) => {
-    const res = await fetch('/.netlify/functions/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
+    const { data, error } = await supabase.from('users').select('*').eq('email', email).eq('password', password).single();
+    if (error || !data) throw new Error('Login inválido');
 
-    if (!res.ok) throw new Error('Login inválido');
-
-    const data = await res.json();
-    setUser(data.user);
-    setUserData(data.userData);
+    setUser({ id: data.id, name: data.name, email: data.email, points: data.points });
+    await fetchUserData(data.id);
   };
 
   const register = async (name: string, email: string, password: string) => {
-    const res = await fetch('/.netlify/functions/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password }),
-    });
+    const { data, error } = await supabase.from('users').insert([{ name, email, password, points: 0 }]).select().single();
+    if (error || !data) throw new Error('Erro ao registrar');
 
-    if (!res.ok) throw new Error('Erro ao registrar');
-
-    const data = await res.json();
-    setUser(data.user);
-    setUserData(data.userData);
+    setUser({ id: data.id, name: data.name, email: data.email, points: data.points });
+    setUserData({});
   };
 
   const logout = () => {
@@ -65,29 +58,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateUserPoints = async (points: number) => {
     if (!user) return;
-    const res = await fetch('/.netlify/functions/update-points', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: user.email, points }),
-    });
+    const { data, error } = await supabase.from('users').update({ points }).eq('id', user.id).select().single();
+    if (error || !data) throw new Error('Erro ao atualizar pontos');
+    setUser({ ...user, points: data.points });
+  };
 
-    if (!res.ok) throw new Error('Erro ao atualizar pontos');
-    const updated = await res.json();
-    setUser({ ...user, points: updated.points });
-    setUserData(updated);
+  const fetchUserData = async (userId: string) => {
+    const { data: routes, error: routesError } = await supabase.from('routes').select('*').eq('user_id', userId);
+    const { data: notes, error: notesError } = await supabase.from('notes').select('*').eq('user_id', userId);
+
+    if (routesError || notesError) throw new Error('Erro ao carregar dados');
+    setUserData({ routes, notes });
   };
 
   const saveUserData = async (newData: any) => {
     if (!user) return;
-    const res = await fetch('/.netlify/functions/save-user-data', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: user.email, newData }),
-    });
-
-    if (!res.ok) throw new Error('Erro ao salvar dados');
-    const updated = await res.json();
-    setUserData(updated);
+    // salvar rotas e notas
+    if (newData.routes) {
+      for (const route of newData.routes) {
+        await supabase.from('routes').insert([{ ...route, user_id: user.id }]);
+      }
+    }
+    if (newData.notes) {
+      for (const note of newData.notes) {
+        await supabase.from('notes').insert([{ content: note.content, user_id: user.id }]);
+      }
+    }
+    await fetchUserData(user.id);
   };
 
   return (

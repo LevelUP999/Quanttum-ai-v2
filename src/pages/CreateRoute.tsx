@@ -193,9 +193,9 @@ IMPORTANTE: Seja muito específico sobre ${formData.subject}. O conteúdo deve s
         dailyTime: formData.dailyTime,
         dedication: formData.dedication,
         activities: studyPlan.activities || [],
-        completedActivities: 0,
+        completedActivities: [],
         createdAt: new Date().toISOString(),
-        studyPlan: studyPlan
+        studyPlan: studyPlan || [],
       };
 
       // ✅ Atualiza rotas no JSON Bin via contexto

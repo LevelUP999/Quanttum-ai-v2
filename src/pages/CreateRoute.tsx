@@ -187,15 +187,12 @@ IMPORTANTE: Seja muito específico sobre ${formData.subject}. O conteúdo deve s
 
       // Salvar a rota de estudo
       const newRoute = {
-        id: Date.now().toString(),
         title: studyPlan.title,
         subject: formData.subject,
-        dailyTime: formData.dailyTime,
+        daily_time: formData.dailyTime,
         dedication: formData.dedication,
         activities: studyPlan.activities || [],
-        completedActivities: [],
-        createdAt: new Date().toISOString(),
-        studyPlan: studyPlan || []
+        created_at: new Date().toISOString()
       };
 
       // ✅ Atualiza rotas no JSON Bin via contexto

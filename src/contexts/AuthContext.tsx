@@ -39,16 +39,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data, error } = await supabase.from('users').select('*').eq('email', email).eq('password', password).single();
     if (error || !data) throw new Error('Login inválido');
 
-    setUser({ id: data.id, name: data.name, email: data.email, points: data.points });
-    await fetchUserData(data.id);
+    const currentUser = { id: data.id, name: data.name, email: data.email, points: data.points };
+    setUser(currentUser);
+    await fetchUserData(currentUser);
   };
 
   const register = async (name: string, email: string, password: string) => {
     const { data, error } = await supabase.from('users').insert([{ name, email, password, points: 0 }]).select().single();
     if (error || !data) throw new Error('Erro ao registrar');
 
-    setUser({ id: data.id, name: data.name, email: data.email, points: data.points });
-    setUserData({});
+    const newUser = { id: data.id, name: data.name, email: data.email, points: data.points };
+    setUser(newUser);
+    await fetchUserData(newUser);
   };
 
   const logout = () => {
@@ -63,28 +65,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser({ ...user, points: data.points });
   };
 
-  const fetchUserData = async (userId: string) => {
-    const { data: routes, error: routesError } = await supabase.from('routes').select('*').eq('user_id', userId);
-    const { data: notes, error: notesError } = await supabase.from('notes').select('*').eq('user_id', userId);
+  const fetchUserData = async (userObj: User) => {
+    const { data: routes, error: routesError } = await supabase.from('routes').select('*').eq('user_id', userObj.id);
+    const { data: notes, error: notesError } = await supabase.from('notes').select('*').eq('user_id', userObj.id);
 
     if (routesError || notesError) throw new Error('Erro ao carregar dados');
-    setUserData({ routes, notes });
+    setUserData({ ...userObj, routes, notes });
   };
 
   const saveUserData = async (newData: any) => {
     if (!user) return;
-    // salvar rotas e notas
+
     if (newData.routes) {
       for (const route of newData.routes) {
         await supabase.from('routes').insert([{ ...route, user_id: user.id }]);
       }
     }
+
     if (newData.notes) {
       for (const note of newData.notes) {
         await supabase.from('notes').insert([{ content: note.content, user_id: user.id }]);
       }
     }
-    await fetchUserData(user.id);
+
+    await fetchUserData(user);
   };
 
   return (

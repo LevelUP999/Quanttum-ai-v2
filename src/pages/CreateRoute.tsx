@@ -202,7 +202,7 @@ IMPORTANTE: Seja muito específico sobre ${formData.subject}. O conteúdo deve s
       const updatedRoutes = [...(userData.routes || []), newRoute];
       await saveUserData({ routes: updatedRoutes });
 
-      toast.success('Rota de estudo criada com IA real! 🎉');
+      toast.success('Rota de estudo criada com IA! 🎉');
       navigate('/dashboard');
 
     } catch (error) {

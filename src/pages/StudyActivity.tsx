@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -38,23 +37,17 @@ interface StudyRoute {
   id: string;
   title: string;
   subject: string;
-  dailyTime: string;
+  daily_time: string;
   dedication: string;
-  activities: number;
-  completedActivities: number;
-  createdAt: string;
-  studyPlan: {
-    title: string;
-    description: string;
-    activities: Activity[];
-  };
+  activities: Activity[];
+  created_at: string;
 }
 
 const StudyActivity = () => {
   const { isAuthenticated, userData, saveUserData, updateUserPoints } = useAuth();
-
   const { routeId, activityId } = useParams();
   const navigate = useNavigate();
+
   const [route, setRoute] = useState<StudyRoute | null>(null);
   const [activity, setActivity] = useState<Activity | null>(null);
   const [userNotes, setUserNotes] = useState('');
@@ -67,13 +60,13 @@ const StudyActivity = () => {
       return;
     }
 
-    const foundRoute = (userData.routes as StudyRoute[]).find((r) => r.id === routeId);
+    const foundRoute = userData.routes.find((r: StudyRoute) => r.id === routeId);
     if (!foundRoute) {
       navigate('/dashboard');
       return;
     }
 
-    const foundActivity = foundRoute.studyPlan.activities.find(
+    const foundActivity = foundRoute.activities.find(
       (a) => a.id === parseInt(activityId || '0')
     );
 
@@ -86,11 +79,11 @@ const StudyActivity = () => {
     setActivity(foundActivity);
 
     const savedNotes = userData?.notes?.[`${routeId}_${activityId}`];
-
     if (savedNotes) {
       setUserNotes(savedNotes);
     }
   }, [routeId, activityId, isAuthenticated, userData, navigate]);
+
   const startStudySession = () => {
     setIsStudying(true);
     setStudyStartTime(new Date());
@@ -101,11 +94,10 @@ const StudyActivity = () => {
     if (!route || !activity) return;
 
     const updatedRoute = { ...route };
-    const activityToUpdate = updatedRoute.studyPlan.activities.find(a => a.id === activity.id);
+    const activityToUpdate = updatedRoute.activities.find((a) => a.id === activity.id);
 
     if (activityToUpdate && !activityToUpdate.completed) {
       activityToUpdate.completed = true;
-      updatedRoute.completedActivities = Number(updatedRoute.completedActivities) + 1;
 
       if (userData) {
         const key = `${routeId}_${activityId}`;
@@ -114,7 +106,6 @@ const StudyActivity = () => {
           [key]: userNotes,
         };
 
-        // 👇 Junta todas as mudanças antes de salvar
         const updatedUserData = {
           ...userData,
           routes: userData.routes.map((r: StudyRoute) =>
@@ -129,16 +120,14 @@ const StudyActivity = () => {
       setRoute(updatedRoute);
       setActivity(activityToUpdate);
 
-      // Calcular pontos baseado na dificuldade e tempo estudado
       let points = activity.difficulty === 'Difícil' ? 15 : activity.difficulty === 'Médio' ? 10 : 5;
 
       if (studyStartTime) {
-        const studyTime = (new Date().getTime() - studyStartTime.getTime()) / (1000 * 60); // em minutos
-        if (studyTime >= 25) points += 5; // Bonus por sessão longa
+        const studyTime = (new Date().getTime() - studyStartTime.getTime()) / (1000 * 60);
+        if (studyTime >= 25) points += 5;
       }
 
-      updateUserPoints(Number(points));
-
+      updateUserPoints(points);
       toast.success(`Atividade concluída! +${points} pontos! 🏆`);
 
       setTimeout(() => {
@@ -159,6 +148,39 @@ const StudyActivity = () => {
     }
 
     toast.success('Notas salvas! 📝');
+  };
+
+  const desmark = async () => {
+    if (!route || !activity || !userData) return;
+
+    const updatedRoute = { ...route };
+    const activityToUpdate = updatedRoute.activities.find((a) => a.id === activity.id);
+
+    if (activityToUpdate && activityToUpdate.completed) {
+      activityToUpdate.completed = false;
+
+      const updatedUserData = {
+        ...userData,
+        routes: userData.routes.map((r: StudyRoute) =>
+          r.id === updatedRoute.id ? updatedRoute : r
+        ),
+      };
+
+      await saveUserData(updatedUserData);
+
+      setRoute(updatedRoute);
+      setActivity(activityToUpdate);
+
+      let points = activity.difficulty === 'Difícil' ? 15 : activity.difficulty === 'Médio' ? 10 : 5;
+
+      if (studyStartTime) {
+        const studyTime = (new Date().getTime() - studyStartTime.getTime()) / (1000 * 60);
+        if (studyTime >= 25) points += 5;
+      }
+
+      updateUserPoints(points * -1);
+      toast.success('Atividade marcada como não concluída. ❌');
+    }
   };
 
   const getTechniqueIcon = (technique: string) => {
@@ -185,61 +207,19 @@ const StudyActivity = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
         <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <p>Carregando atividade...</p>
-          </div>
+        <div className="container mx-auto px-4 py-8 text-center">
+          <p>Carregando atividade...</p>
         </div>
         <Footer />
       </div>
     );
   }
 
-  const desmark = async () => {
-    if (!route || !activity || !userData) return;
-
-    const updatedRoute = { ...route };
-    const activityToUpdate = updatedRoute.studyPlan.activities.find(a => a.id === activity.id);
-
-    if (activityToUpdate && activityToUpdate.completed) {
-      activityToUpdate.completed = false;
-      updatedRoute.completedActivities = Math.max(
-        0,
-        Number(updatedRoute.completedActivities) - 1
-      );
-
-      const updatedUserData = {
-        ...userData,
-        routes: userData.routes.map((r: StudyRoute) =>
-          r.id === updatedRoute.id ? updatedRoute : r
-        ),
-      };
-
-      await saveUserData(updatedUserData);
-
-      setRoute(updatedRoute);
-      setActivity(activityToUpdate);
-
-      let points = activity.difficulty === 'Difícil' ? 15 : activity.difficulty === 'Médio' ? 10 : 5;
-
-      if (studyStartTime) {
-        const studyTime = (new Date().getTime() - studyStartTime.getTime()) / (1000 * 60); // em minutos
-        if (studyTime >= 25) points += 5; // Bonus por sessão longa
-      }
-
-      updateUserPoints(Number(points) * -1);
-
-      toast.success('Atividade marcada como não concluída. ❌');
-    }
-  };
-
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:via-black dark:to-violet-900 dark:from-violet-900 dark:text-white">
       <Header />
-
       <div className="container mx-auto px-4 py-8">
-        {/* Back Button */}
+
         <Button
           variant="outline"
           onClick={() => navigate(`/study-route/${routeId}`)}
@@ -249,7 +229,6 @@ const StudyActivity = () => {
           Voltar à Rota
         </Button>
 
-        {/* Activity Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-4">
             <h1 className="text-4xl font-bold">{activity.title}</h1>
@@ -278,32 +257,28 @@ const StudyActivity = () => {
           </div>
         </div>
 
-        {/* Study Session Control */}
         {!activity.completed && (
           <Card className="mb-8 bg-gradient-to-r from-primary/10 to-accent/10 border-0">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">Sessão de Estudo</h3>
-                  <p className="text-muted-foreground">
-                    {isStudying ? 'Estudo em andamento!' : 'Pronto para começar?'}
-                  </p>
-                </div>
-                <Button
-                  onClick={startStudySession}
-                  disabled={isStudying}
-                  className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
-                >
-                  <Play className="w-4 h-4 mr-2" />
-                  {isStudying ? 'Estudando...' : 'Iniciar Estudo'}
-                </Button>
+            <CardContent className="p-6 flex justify-between items-center">
+              <div>
+                <h3 className="text-xl font-semibold mb-2">Sessão de Estudo</h3>
+                <p className="text-muted-foreground">
+                  {isStudying ? 'Estudo em andamento!' : 'Pronto para começar?'}
+                </p>
               </div>
+              <Button
+                onClick={startStudySession}
+                disabled={isStudying}
+                className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                {isStudying ? 'Estudando...' : 'Iniciar Estudo'}
+              </Button>
             </CardContent>
           </Card>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Content Section */}
           <div className="space-y-6">
             <Card>
               <CardHeader>
@@ -313,11 +288,9 @@ const StudyActivity = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="prose prose-sm max-w-none">
-                  <p className="whitespace-pre-line text-muted-foreground leading-relaxed">
-                    {activity.content}
-                  </p>
-                </div>
+                <p className="whitespace-pre-line text-muted-foreground leading-relaxed">
+                  {activity.content}
+                </p>
               </CardContent>
             </Card>
 
@@ -329,16 +302,13 @@ const StudyActivity = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="prose prose-sm max-w-none">
-                  <div className="whitespace-pre-line text-muted-foreground leading-relaxed">
-                    {activity.exercises}
-                  </div>
-                </div>
+                <p className="whitespace-pre-line text-muted-foreground leading-relaxed">
+                  {activity.exercises}
+                </p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Notes and Actions */}
           <div className="space-y-6">
             <Card>
               <CardHeader>
@@ -363,8 +333,7 @@ const StudyActivity = () => {
               </CardContent>
             </Card>
 
-            {/* Completion Card */}
-            {!activity.completed && (
+            {!activity.completed ? (
               <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
                 <CardHeader>
                   <CardTitle className="flex items-center text-green-800">
@@ -385,9 +354,7 @@ const StudyActivity = () => {
                   </Button>
                 </CardContent>
               </Card>
-            )}
-
-            {activity.completed && (
+            ) : (
               <Card className="bg-gradient-to-r from-primary to-accent text-white border-0">
                 <CardContent className="p-6 text-center">
                   <Trophy className="w-12 h-12 mx-auto mb-3" />
@@ -408,7 +375,6 @@ const StudyActivity = () => {
           </div>
         </div>
       </div>
-
       <Footer />
     </div>
   );

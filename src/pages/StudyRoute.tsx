@@ -9,11 +9,9 @@ import Footer from '@/components/Footer';
 import { toast } from 'sonner';
 import {
   CheckCircle,
-  Circle,
   Clock,
   Brain,
   Target,
-  Sparkles,
   ArrowLeft,
   Trophy,
   BookOpen,
@@ -37,14 +35,10 @@ interface StudyRoute {
   subject: string;
   dailyTime: string;
   dedication: string;
-  activities: number;
+  activities: Activity[];
   completedActivities: number;
   createdAt: string;
-  studyPlan: {
-    title: string;
-    description: string;
-    activities: Activity[];
-  };
+  description?: string;
 }
 
 const StudyRoute = () => {
@@ -54,14 +48,12 @@ const StudyRoute = () => {
   const navigate = useNavigate();
   const [route, setRoute] = useState<StudyRoute | null>(null);
 
-
   useEffect(() => {
     if (!isAuthenticated || !userData) {
       navigate('/login');
       return;
     }
 
-    // Busca rota com base no ID, usando rotas da conta logada
     const foundRoute = (userData.routes as StudyRoute[])?.find((r) => r.id === id);
 
     if (foundRoute) {
@@ -71,33 +63,29 @@ const StudyRoute = () => {
     }
   }, [id, isAuthenticated, userData, navigate]);
 
-
   const completeActivity = async (activityId: number) => {
     if (!route || !userData) return;
 
     const updatedRoute = { ...route };
-    const activity = updatedRoute.studyPlan.activities.find(a => a.id === activityId);
+    const activity = updatedRoute.activities.find(a => a.id === activityId);
 
     if (activity && !activity.completed) {
       activity.completed = true;
       updatedRoute.completedActivities += 1;
 
-      // Atualiza lista de rotas do usuário
       const updatedRoutes = userData.routes.map((r: StudyRoute) =>
         r.id === updatedRoute.id ? updatedRoute : r
       );
 
-      await saveUserData({ routes: updatedRoutes });
+      await saveUserData({ ...userData, routes: updatedRoutes });
       setRoute(updatedRoute);
 
-      // Pontuação
       const points = activity.difficulty === 'Difícil' ? 15 : activity.difficulty === 'Médio' ? 10 : 5;
       updateUserPoints(Number(points));
 
       toast.success(`Atividade concluída! +${points} pontos! 🎉`);
     }
   };
-
 
   const getTechniqueIcon = (technique: string) => {
     if (technique.includes('Pomodoro')) return <Clock className="w-4 h-4" />;
@@ -131,14 +119,15 @@ const StudyRoute = () => {
     );
   }
 
-  const progressPercentage = Math.round((route.completedActivities / route.activities) * 100);
+  const progressPercentage = Math.round(
+    (route.completedActivities / route.activities.length) * 100
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:via-black dark:to-violet-900 dark:from-violet-900 dark:text-white">
       <Header />
 
       <div className="container mx-auto px-4 py-8">
-        {/* Back Button */}
         <Button
           variant="outline"
           onClick={() => navigate('/dashboard')}
@@ -148,12 +137,10 @@ const StudyRoute = () => {
           Voltar ao Dashboard
         </Button>
 
-        {/* Route Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-4">{route.title}</h1>
-          <p className="text-xl text-muted-foreground mb-6">{route.studyPlan.description}</p>
+          <p className="text-xl text-muted-foreground mb-6">{route.description || route.subject}</p>
 
-          {/* Progress Card */}
           <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-0 mb-6">
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -166,7 +153,7 @@ const StudyRoute = () => {
                   <p className="text-sm text-muted-foreground">Concluídas</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-primary mb-1">{route.activities}</div>
+                  <div className="text-3xl font-bold text-primary mb-1">{route.activities.length}</div>
                   <p className="text-sm text-muted-foreground">Total</p>
                 </div>
                 <div className="text-center">
@@ -194,24 +181,21 @@ const StudyRoute = () => {
             Atividades do Plano
           </h2>
 
-          {route.studyPlan.activities.map((activity, index) => (
+          {route.activities.map((activity, index) => (
             <Card
               key={activity.id}
-              className={`hover-lift transition-all duration-300 ${activity.completed ? 'bg-green-50 border-green-200' : 'bg-white'
-                }`}
+              className={`hover-lift transition-all duration-300 ${
+                activity.completed ? 'bg-green-50 border-green-200' : 'bg-white'
+              }`}
             >
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="text-2xl font-bold text-muted-foreground">
-                      {index + 1}
-                    </div>
+                    <div className="text-2xl font-bold text-muted-foreground">{index + 1}</div>
                     <div>
                       <CardTitle className="flex items-center space-x-2">
                         <span>{activity.title}</span>
-                        {activity.completed && (
-                          <CheckCircle className="w-5 h-5 text-green-500" />
-                        )}
+                        {activity.completed && <CheckCircle className="w-5 h-5 text-green-500" />}
                       </CardTitle>
                       <CardDescription>{activity.description}</CardDescription>
                     </div>
@@ -243,7 +227,7 @@ const StudyRoute = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => navigate(`/study-activity/${route.id}/${activity.id}`)}
-                      className='dark:bg-[#1a1a1a] hover:opacity-30 transition hover:scale-[1.030]'
+                      className="dark:bg-[#1a1a1a] hover:opacity-30 transition hover:scale-[1.030]"
                     >
                       <ExternalLink className="w-4 h-4 mr-1" />
                       Estudar Conteúdo
@@ -263,16 +247,13 @@ const StudyRoute = () => {
                 </div>
 
                 <div className="mt-4 p-3 bg-slate-50 rounded-lg">
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {activity.content}
-                  </p>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{activity.content}</p>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {/* Completion Message */}
         {progressPercentage === 100 && (
           <Card className="mt-8 bg-gradient-to-r from-primary to-accent text-white border-0">
             <CardContent className="p-8 text-center">

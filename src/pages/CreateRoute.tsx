@@ -195,7 +195,7 @@ IMPORTANTE: Seja muito específico sobre ${formData.subject}. O conteúdo deve s
         activities: studyPlan.activities || [],
         completedActivities: [],
         createdAt: new Date().toISOString(),
-        studyPlan: studyPlan || [],
+        studyPlan: studyPlan || []
       };
 
       // ✅ Atualiza rotas no JSON Bin via contexto

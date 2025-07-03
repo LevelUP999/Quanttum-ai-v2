@@ -8,15 +8,20 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Plus, BookOpen, Clock, Trophy, Target } from 'lucide-react';
 
+interface Activity {
+  title: string;
+  content: string;
+  completed: boolean;
+}
+
 interface StudyRoute {
   id: string;
   title: string;
   subject: string;
-  dailyTime: string;
+  daily_time: string;
   dedication: string;
-  activities: number;
-  completedActivities: number;
-  createdAt: string;
+  activities: Activity[];
+  created_at: string;
 }
 
 const Dashboard = () => {
@@ -41,7 +46,9 @@ const Dashboard = () => {
 
 
   const getProgressPercentage = (route: StudyRoute) => {
-    return Math.round((route.completedActivities / route.activities) * 100);
+    const total = route.activities.length;
+    const completed = route.activities.filter(a => a.completed).length;
+    return total === 0 ? 0 : Math.round((completed / total) * 100);
   };
 
   const getMotivationalMessage = () => {
@@ -159,7 +166,7 @@ const Dashboard = () => {
                     <div className="space-y-3">
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Clock className="w-4 h-4 mr-2" />
-                        {route.dailyTime} por dia
+                        {route.dailytime} por dia
                       </div>
 
                       <div className="flex items-center text-sm text-muted-foreground">
@@ -175,8 +182,11 @@ const Dashboard = () => {
                       </div>
 
                       <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>{route.completedActivities}/{route.activities} atividades</span>
-                        <span>{new Date(route.createdAt).toLocaleDateString()}</span>
+                        <span>
+                          {route.activities.filter(a => a.completed).length}/{route.activities.length} atividades
+                        </span>
+
+                        <span>{new Date(route.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </CardContent>

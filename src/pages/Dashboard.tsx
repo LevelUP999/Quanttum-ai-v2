@@ -124,7 +124,7 @@ const Dashboard = () => {
           </Link>
         </div>
 
-        {userData.routes.length === 0 ? (
+        {!userData.routes || userData.routes.length === 0 ? (
           <Card className="text-center py-16">
             <CardContent>
               <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />

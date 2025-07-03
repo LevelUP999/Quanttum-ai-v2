@@ -192,7 +192,7 @@ IMPORTANTE: Seja muito específico sobre ${formData.subject}. O conteúdo deve s
         subject: formData.subject,
         dailyTime: formData.dailyTime,
         dedication: formData.dedication,
-        activities: studyPlan.activities?.length || 0,
+        activities: studyPlan.activities || [],
         completedActivities: 0,
         createdAt: new Date().toISOString(),
         studyPlan: studyPlan

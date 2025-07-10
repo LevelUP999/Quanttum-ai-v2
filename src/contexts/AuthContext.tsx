@@ -90,18 +90,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateUserPoints = async (newPoints: number) => {
     if (!user) return;
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('users')
       .update({ points: newPoints })
-      .eq('id', user.id);
+      .eq('id', user.id); // Certifique-se de que user.id seja exatamente igual ao da tabela
 
     if (error) {
-      console.error('Erro ao atualizar pontos:', error.message);
-      return;
+      console.error('Erro ao atualizar pontos:', error);
+      throw new Error('Erro ao atualizar pontos');
     }
 
-    setUser({ ...user, points: newPoints });
+    setUser({ ...user, points: newPoints }); // atualiza o estado local
   };
+
 
 
   const saveUserData = async (newData: any) => {

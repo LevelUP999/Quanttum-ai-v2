@@ -105,23 +105,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const saveUserData = async (newData: any) => {
     if (!user) return;
 
-    // Inserir rotas
+    // Atualizar rotas existentes
     if (newData.routes) {
       for (const route of newData.routes) {
-        await supabase.from('routes').insert([{ ...route, user_id: user.id }]);
+        const { error } = await supabase
+          .from('routes')
+          .update({ ...route })
+          .eq('id', route.id)
+          .eq('user_id', user.id);
+
+        if (error) {
+          console.error('Erro ao atualizar rota:', error);
+        }
       }
     }
 
-    // Inserir notas
+    // Inserir novas notas (mantém como está)
     if (newData.notes) {
       for (const note of newData.notes) {
         await supabase.from('notes').insert([{ content: note.content, user_id: user.id }]);
       }
     }
 
-    // Atualizar dados no estado
     await fetchUserData(user.id);
   };
+
 
   return (
     <AuthContext.Provider

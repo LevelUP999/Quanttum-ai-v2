@@ -44,7 +44,6 @@ interface StudyRoute {
 const StudyRoute = () => {
   const { id } = useParams();
   const { isAuthenticated, userData, saveUserData, updateUserPoints } = useAuth();
-
   const navigate = useNavigate();
   const [route, setRoute] = useState<StudyRoute | null>(null);
 
@@ -55,7 +54,6 @@ const StudyRoute = () => {
     }
 
     const foundRoute = (userData.routes as StudyRoute[])?.find((r) => r.id === id);
-
     if (foundRoute) {
       setRoute(foundRoute);
     } else {
@@ -66,25 +64,35 @@ const StudyRoute = () => {
   const completeActivity = async (activityId: number) => {
     if (!route || !userData) return;
 
-    const updatedRoute = { ...route };
-    const activity = updatedRoute.activities.find(a => a.id === activityId);
+    const updatedActivities = route.activities.map((activity) => {
+      if (activity.id === activityId && !activity.completed) {
+        const points =
+          activity.difficulty === 'Difícil' ? 15 :
+          activity.difficulty === 'Médio' ? 10 :
+          5;
 
-    if (activity && !activity.completed) {
-      activity.completed = true;
-      updatedRoute.completedActivities += 1;
+        toast.success(`Atividade concluída! +${points} pontos! 🎉`);
+        updateUserPoints(points);
 
-      const updatedRoutes = userData.routes.map((r: StudyRoute) =>
-        r.id === updatedRoute.id ? updatedRoute : r
-      );
+        return { ...activity, completed: true };
+      }
+      return activity;
+    });
 
-      await saveUserData({ ...userData, routes: updatedRoutes });
-      setRoute(updatedRoute);
+    const completedActivities = updatedActivities.filter((a) => a.completed).length;
 
-      const points = activity.difficulty === 'Difícil' ? 15 : activity.difficulty === 'Médio' ? 10 : 5;
-      updateUserPoints(Number(points));
+    const updatedRoute: StudyRoute = {
+      ...route,
+      activities: updatedActivities,
+      completedActivities,
+    };
 
-      toast.success(`Atividade concluída! +${points} pontos! 🎉`);
-    }
+    const updatedRoutes = (userData.routes as StudyRoute[]).map((r) =>
+      r.id === route.id ? updatedRoute : r
+    );
+
+    await saveUserData({ ...userData, routes: updatedRoutes });
+    setRoute(updatedRoute);
   };
 
   const getTechniqueIcon = (technique: string) => {
@@ -109,19 +117,17 @@ const StudyRoute = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
         <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <p>Carregando rota de estudo...</p>
-          </div>
+        <div className="container mx-auto px-4 py-8 text-center">
+          <p>Carregando rota de estudo...</p>
         </div>
         <Footer />
       </div>
     );
   }
 
-  const progressPercentage = Math.round(
-    (route.completedActivities / route.activities.length) * 100
-  );
+  const progressPercentage = route.activities.length
+    ? Math.round((route.completedActivities / route.activities.length) * 100)
+    : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:via-black dark:to-violet-900 dark:from-violet-900 dark:text-white">
@@ -143,21 +149,21 @@ const StudyRoute = () => {
 
           <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-0 mb-6">
             <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="text-center">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+                <div>
                   <div className="text-3xl font-bold text-primary mb-1">{progressPercentage}%</div>
                   <p className="text-sm text-muted-foreground">Progresso</p>
                 </div>
-                <div className="text-center">
+                <div>
                   <div className="text-3xl font-bold text-accent mb-1">{route.completedActivities}</div>
                   <p className="text-sm text-muted-foreground">Concluídas</p>
                 </div>
-                <div className="text-center">
+                <div>
                   <div className="text-3xl font-bold text-primary mb-1">{route.activities.length}</div>
                   <p className="text-sm text-muted-foreground">Total</p>
                 </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-accent mb-1">{route.dailyTime}</div>
+                <div>
+                  <div className="text-3xl font-bold text-accent mb-1">{route.dailyTime || '—'}</div>
                   <p className="text-sm text-muted-foreground">Por dia</p>
                 </div>
               </div>
@@ -167,7 +173,7 @@ const StudyRoute = () => {
                   <div
                     className="bg-gradient-to-r from-primary to-accent h-3 rounded-full transition-all duration-500"
                     style={{ width: `${progressPercentage}%` }}
-                  ></div>
+                  />
                 </div>
               </div>
             </CardContent>

@@ -15,7 +15,7 @@ import {
   ArrowLeft,
   Trophy,
   BookOpen,
-  ExternalLink
+  ExternalLink,
 } from 'lucide-react';
 
 interface Activity {
@@ -53,7 +53,7 @@ const StudyRoute = () => {
       return;
     }
 
-    const foundRoute = (userData.routes as StudyRoute[])?.find((r) => r.id === id);
+    const foundRoute = userData.routes?.find((r: StudyRoute) => r.id === id);
     if (foundRoute) {
       setRoute(foundRoute);
     } else {
@@ -66,33 +66,34 @@ const StudyRoute = () => {
 
     const updatedActivities = route.activities.map((activity) => {
       if (activity.id === activityId && !activity.completed) {
-        const points =
-          activity.difficulty === 'Difícil' ? 15 :
-          activity.difficulty === 'Médio' ? 10 :
-          5;
-
-        toast.success(`Atividade concluída! +${points} pontos! 🎉`);
-        updateUserPoints(points);
-
         return { ...activity, completed: true };
       }
       return activity;
     });
 
-    const completedActivities = updatedActivities.filter((a) => a.completed).length;
+    const completedCount = updatedActivities.filter((a) => a.completed).length;
 
     const updatedRoute: StudyRoute = {
       ...route,
       activities: updatedActivities,
-      completedActivities,
+      completedActivities: completedCount,
     };
 
-    const updatedRoutes = (userData.routes as StudyRoute[]).map((r) =>
-      r.id === route.id ? updatedRoute : r
+    const points = (() => {
+      const activity = updatedActivities.find((a) => a.id === activityId);
+      if (!activity) return 0;
+      return activity.difficulty === 'Difícil' ? 15 : activity.difficulty === 'Médio' ? 10 : 5;
+    })();
+
+    const updatedRoutes = userData.routes.map((r: StudyRoute) =>
+      r.id === updatedRoute.id ? updatedRoute : r
     );
 
     await saveUserData({ ...userData, routes: updatedRoutes });
+    updateUserPoints(points);
     setRoute(updatedRoute);
+
+    toast.success(`Atividade concluída! +${points} pontos! 🎉`);
   };
 
   const getTechniqueIcon = (technique: string) => {
@@ -145,7 +146,9 @@ const StudyRoute = () => {
 
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-4">{route.title}</h1>
-          <p className="text-xl text-muted-foreground mb-6">{route.description || route.subject}</p>
+          <p className="text-xl text-muted-foreground mb-6">
+            {route.description || route.subject}
+          </p>
 
           <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-0 mb-6">
             <CardContent className="p-6">
@@ -155,15 +158,21 @@ const StudyRoute = () => {
                   <p className="text-sm text-muted-foreground">Progresso</p>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-accent mb-1">{route.completedActivities}</div>
+                  <div className="text-3xl font-bold text-accent mb-1">
+                    {route.completedActivities}
+                  </div>
                   <p className="text-sm text-muted-foreground">Concluídas</p>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-primary mb-1">{route.activities.length}</div>
+                  <div className="text-3xl font-bold text-primary mb-1">
+                    {route.activities.length}
+                  </div>
                   <p className="text-sm text-muted-foreground">Total</p>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-accent mb-1">{route.dailyTime || '—'}</div>
+                  <div className="text-3xl font-bold text-accent mb-1">
+                    {route.dailyTime || '—'}
+                  </div>
                   <p className="text-sm text-muted-foreground">Por dia</p>
                 </div>
               </div>

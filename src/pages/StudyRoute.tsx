@@ -64,36 +64,33 @@ const StudyRoute = () => {
   const completeActivity = async (activityId: number) => {
     if (!route || !userData) return;
 
-    const updatedActivities = route.activities.map((activity) => {
-      if (activity.id === activityId && !activity.completed) {
-        return { ...activity, completed: true };
-      }
-      return activity;
-    });
-
-    const completedCount = updatedActivities.filter((a) => a.completed).length;
+    const updatedActivities = route.activities.map((activity) =>
+      activity.id === activityId ? { ...activity, completed: true } : activity
+    );
 
     const updatedRoute = {
       ...route,
-      activities: updatedActivities,
-      completedActivities: completedCount,
+      activities: updatedActivities
     };
-
-    const points = (() => {
-      const activity = updatedActivities.find((a) => a.id === activityId);
-      if (!activity) return 0;
-      return activity.difficulty === 'Difícil' ? 15 : activity.difficulty === 'Médio' ? 10 : 5;
-    })();
 
     const updatedRoutes = userData.routes.map((r: StudyRoute) =>
       r.id === updatedRoute.id ? updatedRoute : r
     );
 
     await saveUserData({ ...userData, routes: updatedRoutes });
-    await updateUserPoints(user.points + points);
+
+    // Verifica pontos
+    const completedActivity = updatedActivities.find(a => a.id === activityId);
+    const difficulty = completedActivity?.difficulty;
+    const points =
+      difficulty === 'Difícil' ? 15 :
+        difficulty === 'Médio' ? 10 : 5;
+
+    await updateUserPoints((userData?.points || 0) + points);
     setRoute(updatedRoute);
     toast.success(`Atividade concluída! +${points} pontos! 🎉`);
   };
+
 
 
   const getTechniqueIcon = (technique: string) => {
@@ -126,9 +123,9 @@ const StudyRoute = () => {
     );
   }
 
-  const progressPercentage = route.activities.length
-    ? Math.round((route.completedActivities / route.activities.length) * 100)
-    : 0;
+  const completedCount = route.activities.filter((a) => a.completed).length;
+  const progressPercentage = Math.round((completedCount / route.activities.length) * 100);
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:via-black dark:to-violet-900 dark:from-violet-900 dark:text-white">
@@ -154,7 +151,7 @@ const StudyRoute = () => {
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
                 <div>
-                  <div className="text-3xl font-bold text-primary mb-1">{progressPercentage}%</div>
+                  <div className="text-3xl font-bold text-primary mb-1">{completedCount}%</div>
                   <p className="text-sm text-muted-foreground">Progresso</p>
                 </div>
                 <div>

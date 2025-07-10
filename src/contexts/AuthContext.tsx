@@ -111,7 +111,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .from('routes')
           .update({
             activities: route.activities,
-            completedActivities: route.completedActivities,
             title: route.title,
             subject: route.subject,
             daily_time: route.dailyTime,
@@ -135,6 +134,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     await fetchUserData(user.id);
   };
+
 
 
 

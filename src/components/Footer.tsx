@@ -37,7 +37,7 @@ const Footer: React.FC = () => {
               </div>
             </div>
             <p className="text-xs text-muted-foreground dark:text-gray-400">
-              Veja nossas postagens!
+              Em breve estará disponível...
             </p>
           </div>
         </div>

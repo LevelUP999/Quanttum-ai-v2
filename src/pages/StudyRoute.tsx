@@ -43,7 +43,7 @@ interface StudyRoute {
 
 const StudyRoute = () => {
   const { id } = useParams();
-  const { isAuthenticated, userData, saveUserData, updateUserPoints } = useAuth();
+  const { isAuthenticated, user, userData, saveUserData, updateUserPoints } = useAuth();
   const navigate = useNavigate();
   const [route, setRoute] = useState<StudyRoute | null>(null);
 
@@ -62,7 +62,7 @@ const StudyRoute = () => {
   }, [id, isAuthenticated, userData, navigate]);
 
   const completeActivity = async (activityId: number) => {
-    if (!route || !userData) return;
+    if (!route || !userData || !user) return;
 
     const updatedActivities = route.activities.map((activity) =>
       activity.id === activityId ? { ...activity, completed: true } : activity
@@ -86,10 +86,13 @@ const StudyRoute = () => {
       difficulty === 'Difícil' ? 15 :
         difficulty === 'Médio' ? 10 : 5;
 
-    await updateUserPoints((userData?.points || 0) + points);
+    const newPoints = (user.points ?? 0) + points;
+    await updateUserPoints(newPoints);
+
     setRoute(updatedRoute);
     toast.success(`Atividade concluída! +${points} pontos! 🎉`);
   };
+
 
 
 

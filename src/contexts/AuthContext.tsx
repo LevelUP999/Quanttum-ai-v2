@@ -93,7 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { error } = await supabase
       .from('users')
       .update({ points: newPoints })
-      .eq('id', user.id); // Certifique-se de que user.id seja exatamente igual ao da tabela
+      .eq('id', user.id);
 
     if (error) {
       console.error('Erro ao atualizar pontos:', error);

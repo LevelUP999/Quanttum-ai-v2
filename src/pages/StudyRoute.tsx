@@ -73,7 +73,7 @@ const StudyRoute = () => {
 
     const completedCount = updatedActivities.filter((a) => a.completed).length;
 
-    const updatedRoute: StudyRoute = {
+    const updatedRoute = {
       ...route,
       activities: updatedActivities,
       completedActivities: completedCount,
@@ -90,11 +90,11 @@ const StudyRoute = () => {
     );
 
     await saveUserData({ ...userData, routes: updatedRoutes });
-    updateUserPoints(points);
+    await updateUserPoints(user.points + points);
     setRoute(updatedRoute);
-
     toast.success(`Atividade concluída! +${points} pontos! 🎉`);
   };
+
 
   const getTechniqueIcon = (technique: string) => {
     if (technique.includes('Pomodoro')) return <Clock className="w-4 h-4" />;
@@ -199,9 +199,8 @@ const StudyRoute = () => {
           {route.activities.map((activity, index) => (
             <Card
               key={activity.id}
-              className={`hover-lift transition-all duration-300 ${
-                activity.completed ? 'bg-green-50 border-green-200' : 'bg-white'
-              }`}
+              className={`hover-lift transition-all duration-300 ${activity.completed ? 'bg-green-50 border-green-200' : 'bg-white'
+                }`}
             >
               <CardHeader>
                 <div className="flex items-center justify-between">

@@ -114,7 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             completedActivities: route.completedActivities,
             title: route.title,
             subject: route.subject,
-            dailyTime: route.dailyTime,
+            daily_time: route.dailyTime,
             dedication: route.dedication,
             description: route.description,
           })
@@ -135,6 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     await fetchUserData(user.id);
   };
+
 
 
 

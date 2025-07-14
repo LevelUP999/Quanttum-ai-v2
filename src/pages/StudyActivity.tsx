@@ -199,7 +199,7 @@ const StudyActivity = () => {
                 <CardTitle>{activity.title}</CardTitle>
                 <CardDescription>{activity.description}</CardDescription>
               </CardHeader>
-              <CardContent className="flex gap-4">
+              <CardContent className="flex flex-wrap gap-2 sm:gap-4">
                 <Badge className="bg-purple-100 text-purple-800">{activity.technique}</Badge>
                 <Badge className="bg-yellow-100 text-yellow-800">{activity.difficulty}</Badge>
                 <Badge variant="outline">

@@ -75,14 +75,15 @@ const CreateRoute = () => {
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-4">
+          <div className="text-center mb-8 px-2 sm:px-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-tight">
               Criar Nova <span className="gradient-text">Rota de Estudo</span>
             </h1>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-base sm:text-lg text-muted-foreground">
               Nossa IA criará um plano personalizado e cientificamente estruturado para você
             </p>
           </div>
+
 
           <Card className="shadow-2xl border-0">
             <CardHeader className="text-center">
@@ -161,12 +162,12 @@ const CreateRoute = () => {
               <Button
                 onClick={generateStudyPlan}
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 py-6 text-lg font-semibold"
+                className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 py-5 sm:py-6 text-base sm:text-lg font-semibold"
               >
                 {isLoading ? (
                   <>
                     <Brain className="w-5 h-5 mr-2 animate-spin" />
-                    IA gerando conteúdo personalizado...
+                    Gerando conteúdo...
                   </>
                 ) : (
                   <>
@@ -175,6 +176,7 @@ const CreateRoute = () => {
                   </>
                 )}
               </Button>
+
 
               <p className="text-xs text-muted-foreground text-center">
                 * Todos os campos são obrigatórios

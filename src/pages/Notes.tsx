@@ -100,16 +100,20 @@ const Notes = () => {
 
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" onClick={() => navigate('/dashboard')} className="hover-lift dark:bg-[#1a1a1a]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/dashboard')}
+              className="hover-lift dark:bg-[#1a1a1a] w-full sm:w-auto"
+            >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar ao Dashboard
             </Button>
 
             <div className="flex items-center space-x-2">
-              <StickyNote className="w-8 h-8 text-primary animate-leftright" />
-              <h1 className="text-4xl font-bold">Minhas Anotações</h1>
+              <StickyNote className="w-7 h-7 text-primary animate-leftright" />
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">Minhas Anotações</h1>
             </div>
           </div>
         </div>
@@ -128,80 +132,64 @@ const Notes = () => {
         </div>
 
         {/* Notes List */}
-        {filteredNotes.length === 0 ? (
-          <Card className="text-center py-12">
-            <CardContent>
-              <StickyNote className="w-16 h-16 mx-auto mb-4 text-muted-foreground animate-float" />
-              <h3 className="text-xl font-semibold mb-2">
-                {notes.length === 0 ? 'Nenhuma anotação encontrada' : 'Nenhuma anotação corresponde à busca'}
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                {notes.length === 0
-                  ? 'Comece fazendo anotações durante seus estudos!'
-                  : 'Tente usar termos diferentes na busca.'}
-              </p>
-              {notes.length === 0 && (
-                <Button onClick={() => navigate('/dashboard')}>
-                  <BookOpen className="w-4 h-4 mr-2 dark:bg-[#1a1a1a]" />
-                  Começar a Estudar
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredNotes.map((note) => (
+            <Card
+              key={`${note.routeId}-${note.activityId}`}
+              className="hover-lift flex flex-col justify-between"
+            >
+              <CardHeader>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
+                      <BookOpen className="w-5 h-5 text-primary" />
+                      <span className="break-words">{note.activityTitle}</span>
+                    </CardTitle>
+                    <CardDescription className="mt-1 text-sm sm:text-base break-words">
+                      Rota: {note.routeTitle}
+                    </CardDescription>
+                  </div>
+
+                  <div className="flex items-center space-x-2 mt-2 sm:mt-0">
+                    <Badge
+                      variant="outline"
+                      className="flex items-center space-x-1 text-xs sm:text-sm dark:text-white"
+                    >
+                      <Calendar className="w-3 h-3" />
+                      <span>{note.savedAt}</span>
+                    </Badge>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => deleteNote(note.routeId, note.activityId)}
+                      className="text-destructive hover:text-destructive dark:bg-[#1a1a1a] hover:opacity-30 transition hover:scale-[1.030]"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent>
+                <div className="bg-muted/30 rounded-lg p-3 sm:p-4 mb-4">
+                  <p className="text-sm sm:text-base text-muted-foreground whitespace-pre-wrap break-words line-clamp-5 dark:text-white">
+                    {note.content}
+                  </p>
+                </div>
+
+                <Button
+                  onClick={() => goToActivity(note.routeId, note.activityId)}
+                  variant="outline"
+                  size="sm"
+                  className="dark:bg-[#1a1a1a] hover:opacity-30 transition hover:scale-[1.030] w-full"
+                >
+                  Ver Atividade Completa
                 </Button>
-              )}
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-6">
-            {filteredNotes.map((note) => (
-              <Card key={`${note.routeId}-${note.activityId}`} className="hover-lift">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="flex items-center space-x-2">
-                        <BookOpen className="w-5 h-5 text-primary" />
-                        <span>{note.activityTitle}</span>
-                      </CardTitle>
-                      <CardDescription className="mt-1">
-                        Rota: {note.routeTitle}
-                      </CardDescription>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="outline" className="flex items-center space-x-1 dark:text-white">
-                        <Calendar className="w-3 h-3" />
-                        <span>{note.savedAt}</span>
-                      </Badge>
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => deleteNote(note.routeId, note.activityId)}
-                        className="text-destructive hover:text-destructive dark:bg-[#1a1a1a] hover:opacity-30 transition hover:scale-[1.030]"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-
-                <CardContent>
-                  <div className="bg-muted/30 rounded-lg p-4 mb-4">
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-4 dark:text-white">
-                      {note.content}
-                    </p>
-                  </div>
-
-                  <Button
-                    onClick={() => goToActivity(note.routeId, note.activityId)}
-                    variant="outline"
-                    size="sm"
-                    className='dark:bg-[#1a1a1a] hover:opacity-30 transition hover:scale-[1.030]'
-                  >
-                    Ver Atividade Completa
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
 
       <Footer />

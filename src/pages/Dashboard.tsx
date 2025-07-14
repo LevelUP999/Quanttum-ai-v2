@@ -128,16 +128,19 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Routes Section */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl font-bold dark:text-white">Suas Rotas de Estudo</h2>
-          <Link to="/create-route">
-            <Button className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 hover-lift">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <h2 className="text-2xl sm:text-3xl font-bold dark:text-white">
+            Suas Rotas de Estudo
+          </h2>
+
+          <Link to="/create-route" className="w-full sm:w-auto">
+            <Button className="w-full sm:w-auto bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 hover-lift">
               <Plus className="w-5 h-5 mr-2" />
               Nova Rota
             </Button>
           </Link>
         </div>
+
 
         {routes.length === 0 ? (
           <Card className="text-center py-16">

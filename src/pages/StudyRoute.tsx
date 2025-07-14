@@ -147,14 +147,16 @@ const StudyRoute = () => {
         </Button>
 
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-4">{route.title}</h1>
-          <p className="text-xl text-muted-foreground mb-6">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2 sm:mb-4">{route.title}</h1>
+          <p className="text-base sm:text-lg text-muted-foreground mb-4 sm:mb-6">
             {route.description || route.subject}
           </p>
 
+
           <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-0 mb-6">
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+            <CardContent className="p-4 sm:p-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 text-center">
+
                 <div>
                   <div className="text-3xl font-bold text-primary mb-1">{progressPercentage}%</div>
                   <p className="text-sm text-muted-foreground">Progresso</p>
@@ -188,19 +190,16 @@ const StudyRoute = () => {
 
         {/* Activities */}
         <div className="space-y-4">
-          <h2 className="text-3xl font-bold mb-6 flex items-center">
-            <BookOpen className="w-8 h-8 mr-3 text-primary" />
+          <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 flex items-center flex-wrap gap-2">
+            <BookOpen className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
             Atividades do Plano
           </h2>
 
+
           {route.activities.map((activity: any, index: number) => (
-            <Card
-              key={activity.id}
-              className={`hover-lift transition-all duration-300 ${activity.completed ? 'bg-green-50 border-green-200' : 'bg-white'
-                }`}
-            >
+            <Card key={activity.id} className={`hover-lift transition-all duration-300 ${activity.completed ? 'bg-green-50 border-green-200' : 'bg-white dark:bg-[#0f0f0f]'}`}>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
                   <div className="flex items-center space-x-3">
                     <div className="text-2xl font-bold text-muted-foreground">{index + 1}</div>
                     <div>
@@ -236,14 +235,12 @@ const StudyRoute = () => {
                     </div>
                   </div>
 
-                  <div className="flex space-x-2">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-2 sm:mt-0">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() =>
-                        navigate(`/study-activity/${route.id}/${activity.id}`)
-                      }
-                      className="dark:bg-[#1a1a1a] hover:opacity-30 transition hover:scale-[1.030]"
+                      onClick={() => navigate(`/study-activity/${route.id}/${activity.id}`)}
+                      className="dark:bg-[#1a1a1a] w-full sm:w-auto"
                     >
                       <ExternalLink className="w-4 h-4 mr-1" />
                       Estudar Conteúdo
@@ -252,13 +249,13 @@ const StudyRoute = () => {
                     <Button
                       size="sm"
                       onClick={() => toggleActivityCompleted(activity.id)}
-                      className={`bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 ${activity.completed ? 'opacity-70' : ''
-                        }`}
+                      className={`bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 w-full sm:w-auto ${activity.completed ? 'opacity-70' : ''}`}
                     >
                       <CheckCircle className="w-4 h-4 mr-1" />
                       {activity.completed ? 'Desconcluir' : 'Concluir'}
                     </Button>
                   </div>
+
                 </div>
 
                 <div className="mt-4 p-3 bg-slate-50 rounded-lg">

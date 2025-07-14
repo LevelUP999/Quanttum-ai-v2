@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,9 +7,11 @@ import Logo from './Logo';
 import { LogOut, User, Coins, Moon, Sun, StickyNote } from 'lucide-react';
 
 const Header: React.FC = () => {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+
+  const isAuthenticated = !!user;
 
   const handleLogout = () => {
     logout();
@@ -66,10 +67,10 @@ const Header: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={handleLogout}
-                  className="flex items-center space-x-2 dark:bg-[#1a1a1a]"
+                  className="bg-gradient-to-l from-primary to-accent hover:from-primary/90 hover:to-accent/90 dark:border-0 hover:scale-[1.05] transition"
                 >
-                  <LogOut className="w-4 h-4 dark:text-white" />
-                  <span className='dark:text-white'>Sair</span>
+                  <LogOut className="font-semibold text-white" />
+                  <span className='font-semibold text-white'>Sair</span>
                 </Button>
               </>
             ) : (

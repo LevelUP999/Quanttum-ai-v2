@@ -38,7 +38,7 @@ export const supabaseClient = {
         id,
         email,
         name,
-        password, // Idealmente, use bcrypt aqui
+        password,
         routes: [],
         notes: [],
         points: 0,

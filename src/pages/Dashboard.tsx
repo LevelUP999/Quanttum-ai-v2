@@ -86,18 +86,6 @@ const Dashboard = () => {
             </div>
             <p className="text-xl text-muted-foreground mb-2">{getMotivationalMessage()}</p>
           </div>
-          <div className="flex gap-4">
-            <Link to="/notes">
-              <Button variant="outline">
-                <BookOpen className="h-4 w-4 mr-2" />
-                Anotações
-              </Button>
-            </Link>
-            <Button variant="outline" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sair
-            </Button>
-          </div>
         </div>
 
         {/* Stats Cards */}

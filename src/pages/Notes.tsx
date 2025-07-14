@@ -20,20 +20,22 @@ interface NoteEntry {
 }
 
 const Notes = () => {
-  const { isAuthenticated, userData, saveUserData } = useAuth();
+  const { user, updateUser } = useAuth();
+  const isAuthenticated = !!user;
+
   const navigate = useNavigate();
   const [notes, setNotes] = useState<NoteEntry[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredNotes, setFilteredNotes] = useState<NoteEntry[]>([]);
 
   useEffect(() => {
-    if (!isAuthenticated || !userData) {
+    if (!isAuthenticated || !user) {
       navigate('/login');
       return;
     }
 
     loadNotesFromUserData();
-  }, [isAuthenticated, userData, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   useEffect(() => {
     if (searchTerm) {
@@ -49,23 +51,23 @@ const Notes = () => {
   }, [searchTerm, notes]);
 
   const loadNotesFromUserData = () => {
-    if (!userData) return;
+    if (!user || !Array.isArray(user.notes)) return;
 
     const allNotes: NoteEntry[] = [];
 
-    for (const route of userData.routes) {
-      for (const activity of route.studyPlan.activities) {
+    for (const route of user.routes || []) {
+      for (const activity of route.activities || []) {
         const key = `${route.id}_${activity.id}`;
-        const content = userData.notes?.[key];
+        const noteEntry = user.notes.find((n: any) => n.key === key);
 
-        if (content?.trim()) {
+        if (noteEntry?.content?.trim()) {
           allNotes.push({
             routeId: route.id,
             activityId: activity.id.toString(),
             routeTitle: route.title,
             activityTitle: activity.title,
-            content,
-            savedAt: new Date().toLocaleDateString('pt-BR')
+            content: noteEntry.content,
+            savedAt: new Date().toLocaleDateString('pt-BR'),
           });
         }
       }
@@ -77,13 +79,12 @@ const Notes = () => {
 
   const deleteNote = async (routeId: string, activityId: string) => {
     const key = `${routeId}_${activityId}`;
+    const existingNote = user?.notes?.find((n: any) => n.key === key);
+    if (!existingNote) return;
 
-    if (!userData?.notes?.[key]) return;
+    const updatedNotes = user.notes.filter((n: any) => n.key !== key);
 
-    const updatedNotes = { ...userData.notes };
-    delete updatedNotes[key];
-
-    await saveUserData({ ...userData, notes: updatedNotes });
+    await updateUser({ notes: updatedNotes });
     toast.success('Anotação excluída com sucesso! 🗑️');
     loadNotesFromUserData();
   };
@@ -91,6 +92,7 @@ const Notes = () => {
   const goToActivity = (routeId: string, activityId: string) => {
     navigate(`/study-activity/${routeId}/${activityId}`);
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 dark:via-black dark:to-violet-900 dark:from-violet-900 dark:text-white">
@@ -106,7 +108,7 @@ const Notes = () => {
             </Button>
 
             <div className="flex items-center space-x-2">
-              <StickyNote className="w-8 h-8 text-primary" />
+              <StickyNote className="w-8 h-8 text-primary animate-leftright" />
               <h1 className="text-4xl font-bold">Minhas Anotações</h1>
             </div>
           </div>
@@ -129,12 +131,12 @@ const Notes = () => {
         {filteredNotes.length === 0 ? (
           <Card className="text-center py-12">
             <CardContent>
-              <StickyNote className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+              <StickyNote className="w-16 h-16 mx-auto mb-4 text-muted-foreground animate-float" />
               <h3 className="text-xl font-semibold mb-2">
                 {notes.length === 0 ? 'Nenhuma anotação encontrada' : 'Nenhuma anotação corresponde à busca'}
               </h3>
               <p className="text-muted-foreground mb-4">
-                {notes.length === 0 
+                {notes.length === 0
                   ? 'Comece fazendo anotações durante seus estudos!'
                   : 'Tente usar termos diferentes na busca.'}
               </p>

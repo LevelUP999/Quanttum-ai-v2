@@ -67,7 +67,7 @@ const Login = () => {
 
     setIsLoading(true);
     try {
-      await register(registerForm.name, registerForm.email, registerForm.password);
+      await register(registerForm.email, registerForm.password, registerForm.name);
       toast({
         title: "Conta criada com sucesso!",
         description: "Bem-vindo!",

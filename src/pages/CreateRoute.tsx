@@ -12,11 +12,14 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { toast } from 'sonner';
 import { Loader2, Sparkles, Brain, Target } from 'lucide-react';
+import { pollinationsClient } from '@/lib/pollinationsClient';
 
 
 
 const CreateRoute = () => {
-  const { isAuthenticated, userData, saveUserData } = useAuth();
+  const { user, updateUser } = useAuth();
+  const isAuthenticated = !!user;
+
 
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -33,11 +36,10 @@ const CreateRoute = () => {
   }, [isAuthenticated, navigate]);
 
   const generateStudyPlan = async () => {
-    if (!userData) {
+    if (!user) {
       toast.error('Erro ao acessar os dados do usuário.');
       return;
     }
-
 
     if (!formData.subject || !formData.dailyTime || !formData.dedication) {
       toast.error('Por favor, preencha todos os campos');
@@ -47,161 +49,18 @@ const CreateRoute = () => {
     setIsLoading(true);
 
     try {
-      // Prompt bem estruturado para a API do Pollinations
-      const prompt = `Crie um plano de estudos detalhado e estruturado para: "${formData.subject}".
-      
-INFORMAÇÕES DO USUÁRIO:
-- Tempo disponível por dia: ${formData.dailyTime}
-- Nível de dedicação: ${formData.dedication}
+      // Use diretamente a função do pollinationsClient
+      const newRoute = await pollinationsClient.generateStudyRoute(
+        `${formData.subject}`,
+        formData.dailyTime,
+        formData.dedication
+      );
 
-INSTRUÇÕES PARA O PLANO:
-1. Crie um título descritivo para o plano
-2. Faça uma descrição motivacional do plano
-3. Gere entre 8-12 atividades progressivas e específicas
-4. Cada atividade deve ter conteúdo real e prático
-5. Distribua técnicas de estudo cientificamente comprovadas
-6. Adapte a dificuldade ao nível de dedicação informado
-
-RESPONDA APENAS COM UM JSON VÁLIDO NO SEGUINTE FORMATO:
-{
-  "title": "Nome específico do plano de estudos",
-  "description": "Descrição motivacional e clara do que será aprendido",
-  "activities": [
-    {
-      "id": 1,
-      "title": "Título específico da atividade",
-      "description": "Descrição detalhada do que será feito",
-      "technique": "Técnica Pomodoro|Revisão Espaçada|Aprendizagem Ativa|Mapa Mental",
-      "duration": "Tempo estimado (ex: 45 minutos)",
-      "difficulty": "Fácil|Médio|Difícil",
-      "content": "Conteúdo específico e detalhado para estudar, incluindo tópicos, conceitos chave, exercícios sugeridos e materiais de apoio. Seja muito específico sobre o que o aluno deve fazer.",
-      "exercises": "Lista de 3-5 exercícios práticos específicos relacionados ao conteúdo"
-    }
-  ]
-}
-
-IMPORTANTE: Seja muito específico sobre ${formData.subject}. O conteúdo deve ser útil, prático e realmente ensinar sobre o tema solicitado.`;
-
-      console.log('Enviando prompt para Pollinations API:', prompt);
-
-      // Chamada real para a API do Pollinations
-      const response = await fetch('https://text.pollinations.ai/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'system',
-              content: 'Você é um especialista em educação e criação de planos de estudo personalizados. Sempre responda apenas com JSON válido conforme solicitado.'
-            },
-            {
-              role: 'user',
-              content: prompt
-            }
-          ],
-          model: 'openai',
-          temperature: 0.7,
-          max_tokens: 2000
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Erro na API: ${response.status}`);
-      }
-
-      const aiResponse = await response.text();
-      console.log('Resposta da API:', aiResponse);
-
-      // Tentar extrair JSON da resposta
-      let studyPlan;
-      try {
-        // Limpar a resposta para extrair apenas o JSON
-        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          studyPlan = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error('JSON não encontrado na resposta');
-        }
-      } catch (parseError) {
-        console.error('Erro ao fazer parse do JSON:', parseError);
-        console.log('Resposta original:', aiResponse);
-
-        // Fallback com dados baseados no input do usuário
-        studyPlan = {
-          title: `Plano de Estudos: ${formData.subject}`,
-          description: `Plano personalizado para dominar ${formData.subject} com ${formData.dailyTime} diários`,
-          activities: [
-            {
-              id: 1,
-              title: `Fundamentos de ${formData.subject}`,
-              description: "Estabelecer base sólida nos conceitos fundamentais",
-              technique: "Aprendizagem Ativa",
-              duration: "45 minutos",
-              difficulty: "Fácil",
-              content: `Estudar os conceitos básicos e fundamentais de ${formData.subject}. Foque em compreender definições, princípios básicos e como eles se aplicam na prática. Faça resumos e mapas mentais dos principais tópicos.`,
-              exercises: `1. Defina os 5 conceitos mais importantes de ${formData.subject}\n2. Crie um glossário com os termos técnicos\n3. Explique com suas palavras cada conceito\n4. Desenhe um mapa mental conectando os conceitos\n5. Faça 10 questões sobre os fundamentos`,
-              completed: false
-            },
-            {
-              id: 2,
-              title: `Prática Dirigida em ${formData.subject}`,
-              description: "Aplicar conhecimentos através de exercícios práticos",
-              technique: "Técnica Pomodoro",
-              duration: "60 minutos",
-              difficulty: "Médio",
-              content: `Resolver exercícios práticos e problemas reais relacionados a ${formData.subject}. Use a técnica Pomodoro: 25 min de estudo focado + 5 min de pausa. Concentre-se em aplicar os conceitos aprendidos.`,
-              exercises: `1. Resolva 10 exercícios básicos sobre o tema\n2. Explique o raciocínio de cada resolução\n3. Identifique padrões nas soluções\n4. Crie 3 exercícios similares\n5. Teste seus exercícios`,
-              completed: false
-            },
-            {
-              id: 3,
-              title: `Revisão e Aprofundamento`,
-              description: "Consolidar conhecimento e explorar tópicos avançados",
-              technique: "Revisão Espaçada",
-              duration: "40 minutos",
-              difficulty: "Médio",
-              content: `Revisar todo o conteúdo estudado anteriormente e explorar aspectos mais avançados de ${formData.subject}. Use técnicas de revisão espaçada para fixar o conhecimento a longo prazo.`,
-              exercises: `1. Faça um resumo completo do que aprendeu\n2. Identifique suas principais dificuldades\n3. Busque materiais complementares sobre os pontos difíceis\n4. Explique o conteúdo para alguém ou grave um vídeo\n5. Faça um teste simulado`,
-              completed: false
-            }
-          ]
-        };
-      }
-
-      if (!userData) {
-        toast.error('Erro ao acessar os dados do usuário.');
-        return;
-      }
-
-      // Garantir que as atividades tenham IDs únicos e estejam completas
-      if (studyPlan.activities) {
-        studyPlan.activities = studyPlan.activities.map((activity, index) => ({
-          ...activity,
-          id: index + 1,
-          completed: false,
-          exercises: activity.exercises || `Exercícios práticos relacionados a ${activity.title}`,
-        }));
-      }
-
-      // Salvar a rota de estudo
-      const newRoute = {
-        title: studyPlan.title,
-        subject: formData.subject,
-        daily_time: formData.dailyTime,
-        dedication: formData.dedication,
-        activities: studyPlan.activities || [],
-        created_at: new Date().toISOString()
-      };
-
-      // ✅ Atualiza rotas no JSON Bin via contexto
-      const updatedRoutes = [...(userData.routes || []), newRoute];
-      await saveUserData({ routes: updatedRoutes });
+      const updatedRoutes = [...(user.routes || []), newRoute];
+      await updateUser({ routes: updatedRoutes });
 
       toast.success('Rota de estudo criada com IA! 🎉');
       navigate('/dashboard');
-
     } catch (error) {
       console.error('Erro ao gerar plano de estudos:', error);
       toast.error('Erro ao conectar com a IA. Tente novamente em alguns segundos.');
@@ -228,7 +87,7 @@ IMPORTANTE: Seja muito específico sobre ${formData.subject}. O conteúdo deve s
           <Card className="shadow-2xl border-0">
             <CardHeader className="text-center">
               <CardTitle className="flex items-center justify-center space-x-2">
-                <Brain className="w-6 h-6 text-primary" />
+                <Brain className={`w-6 h-6 text-primary ${isLoading ? "animate-spin" : "animate-none"}`} />
                 <span>Personalize seu Aprendizado</span>
               </CardTitle>
               <CardDescription>
@@ -306,13 +165,13 @@ IMPORTANTE: Seja muito específico sobre ${formData.subject}. O conteúdo deve s
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    <Brain className="w-5 h-5 mr-2 animate-spin" />
                     IA gerando conteúdo personalizado...
                   </>
                 ) : (
                   <>
                     <Target className="w-5 h-5 mr-2" />
-                    Gerar Rota com IA Real
+                    Gerar Rota com IA
                   </>
                 )}
               </Button>

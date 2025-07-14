@@ -1,160 +1,116 @@
-import React, { createContext, useContext, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
-
-// Supabase config
-const supabaseUrl = 'https://jfrybckxwmqryfaewikr.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmcnliY2t4d21xcnlmYWV3aWtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzcyNTksImV4cCI6MjA2NzA1MzI1OX0.VXJI3M-_CToOC-5chRYmOYGuhsyFp1yZEcTc6qGaOFc';
-const supabase = createClient(supabaseUrl, supabaseKey);
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabaseClient } from '@/lib/supabaseClient'; // ← deve estar implementado
+import { toast } from 'sonner';
 
 interface User {
   id: string;
   name: string;
   email: string;
+  password: string;
+  routes: any[];
+  notes: any[];
   points: number;
 }
 
 interface AuthContextType {
   user: User | null;
-  isAuthenticated: boolean;
+  loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => void;
-  updateUserPoints: (points: number) => Promise<void>;
-  userData: any;
-  saveUserData: (data: any) => Promise<void>;
+  updateUser: (updates: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
   return context;
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [userData, setUserData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const fetchUserData = async (userId: string) => {
-    const { data: routes, error: routesError } = await supabase
-      .from('routes')
-      .select('*')
-      .eq('user_id', userId);
-
-    const { data: notes, error: notesError } = await supabase
-      .from('notes')
-      .select('*')
-      .eq('user_id', userId);
-
-    if (routesError || notesError) {
-      console.error('Erro ao carregar rotas ou anotações:', routesError, notesError);
-      throw new Error('Erro ao carregar dados');
+  useEffect(() => {
+    const storedUser = localStorage.getItem('quanttun_user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error('Erro ao carregar usuário do localStorage:', error);
+        localStorage.removeItem('quanttun_user');
+      }
     }
-
-    setUserData({ routes: routes || [], notes: notes || [] });
-  };
+    setLoading(false);
+  }, []);
 
   const login = async (email: string, password: string) => {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', email)
-      .eq('password', password)
-      .single();
-
-    if (error || !data) throw new Error('Login inválido');
-
-    setUser({ id: data.id, name: data.name, email: data.email, points: data.points });
-    await fetchUserData(data.id);
+    setLoading(true);
+    try {
+      const userData = await supabaseClient.signIn({ email, password });
+      if (userData) {
+        setUser(userData);
+        localStorage.setItem('quanttun_user', JSON.stringify(userData));
+        toast.success('Login realizado com sucesso');
+      } else {
+        throw new Error('Dados do usuário não encontrados');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao fazer login');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const register = async (name: string, email: string, password: string) => {
-    const { data, error } = await supabase
-      .from('users')
-      .insert([{ name, email, password, points: 0 }])
-      .select()
-      .single();
+  const register = async (email: string, password: string, name: string) => {
+    setLoading(true);
+    try {
+      if (!name.trim()) throw new Error('Nome é obrigatório');
+      if (!email.trim()) throw new Error('Email é obrigatório');
+      if (password.length < 6) throw new Error('Senha deve ter pelo menos 6 caracteres');
 
-    if (error || !data) throw new Error('Erro ao registrar');
-
-    setUser({ id: data.id, name: data.name, email: data.email, points: data.points });
-    await fetchUserData(data.id); // busca dados vazios após registro
+      const userData = await supabaseClient.signUp({ email, password, name });
+      if (userData) {
+        setUser(userData);
+        localStorage.setItem('quanttun_user', JSON.stringify(userData));
+        toast.success('Conta criada com sucesso');
+      } else {
+        throw new Error('Erro ao criar conta');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao registrar');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const logout = () => {
     setUser(null);
-    setUserData(null);
+    localStorage.removeItem('quanttun_user');
   };
 
-  const updateUserPoints = async (newPoints: number) => {
+  const updateUser = async (updates: Partial<User>) => {
     if (!user) return;
-
-    const { error } = await supabase
-      .from('users')
-      .update({ points: newPoints })
-      .eq('id', user.id);
-
-    if (error) {
-      console.error('Erro ao atualizar pontos:', error);
-      throw new Error('Erro ao atualizar pontos');
+    try {
+      const updatedData = await supabaseClient.updateUser(user.email, updates);
+      const updatedUser = { ...user, ...updates };
+      setUser(updatedUser);
+      localStorage.setItem('quanttun_user', JSON.stringify(updatedUser));
+      toast.success('Dados atualizados com sucesso');
+    } catch (error: any) {
+      toast.error('Erro ao atualizar dados');
+      throw error;
     }
-
-    setUser({ ...user, points: newPoints }); // atualiza o estado local
   };
-
-
-
-  const saveUserData = async (newData: any) => {
-    if (!user) return;
-
-    if (newData.routes) {
-      for (const route of newData.routes) {
-        const { error } = await supabase
-          .from('routes')
-          .update({
-            activities: route.activities,
-            title: route.title,
-            subject: route.subject,
-            daily_time: route.dailyTime,
-            dedication: route.dedication,
-            description: route.description,
-          })
-          .eq('id', route.id)
-          .eq('user_id', user.id);
-
-        if (error) {
-          console.error('Erro ao atualizar rota:', error.message);
-        }
-      }
-    }
-
-    if (newData.notes) {
-      for (const note of newData.notes) {
-        await supabase.from('notes').insert([{ content: note.content, user_id: user.id }]);
-      }
-    }
-
-    await fetchUserData(user.id);
-  };
-
-
-
-
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        login,
-        register,
-        logout,
-        updateUserPoints,
-        userData,
-        saveUserData,
-      }}
-    >
+    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

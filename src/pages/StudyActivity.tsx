@@ -1,76 +1,78 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+
+import { useAuth } from '@/contexts/AuthContext';
+import { pollinationsClient } from '@/lib/pollinationsClient';
 import { toast } from 'sonner';
+
 import {
+  ArrowLeft,
+  Play,
+  Pause,
+  Square,
+  Lightbulb,
+  StickyNote,
+  Loader2,
   CheckCircle,
   Clock,
-  Brain,
-  Target,
-  ArrowLeft,
-  BookOpen,
-  PenTool,
-  Lightbulb,
   Trophy,
-  Play
+  BookOpen,
+  PenTool
 } from 'lucide-react';
 
-interface Activity {
-  id: number;
-  title: string;
-  description: string;
-  technique: string;
-  duration: string;
-  difficulty: string;
-  content: string;
-  exercises: string;
-  completed: boolean;
-}
-
-interface StudyRoute {
-  id: string;
-  title: string;
-  subject: string;
-  daily_time: string;
-  dedication: string;
-  activities: Activity[];
-  created_at: string;
-}
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import rehypeRaw from 'rehype-raw';
+import rehypeHighlight from 'rehype-highlight';
 
 const StudyActivity = () => {
-  const { isAuthenticated, userData, saveUserData, updateUserPoints } = useAuth();
   const { routeId, activityId } = useParams();
   const navigate = useNavigate();
 
-  const [route, setRoute] = useState<StudyRoute | null>(null);
-  const [activity, setActivity] = useState<Activity | null>(null);
-  const [userNotes, setUserNotes] = useState('');
-  const [isStudying, setIsStudying] = useState(false);
+  const { user, updateUser, loading: authLoading } = useAuth();
+
+  const [route, setRoute] = useState<any | null>(null);
+  const [activity, setActivity] = useState<any | null>(null);
+  const [note, setNote] = useState('');
+  const [timer, setTimer] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
   const [studyStartTime, setStudyStartTime] = useState<Date | null>(null);
+  const [detailedExplanation, setDetailedExplanation] = useState('');
+  const [loadingExplanation, setLoadingExplanation] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated || !userData) {
+    if (authLoading) return;
+
+    if (!user) {
       navigate('/login');
       return;
     }
 
-    const foundRoute = userData.routes.find((r: StudyRoute) => r.id === routeId);
-    if (!foundRoute) {
+    if (!routeId || !activityId) {
+      toast.error('IDs inválidos');
       navigate('/dashboard');
       return;
     }
 
-    const foundActivity = foundRoute.activities.find(
-      (a) => a.id === parseInt(activityId || '0')
-    );
+    const foundRoute = user.routes?.find((r: any) => r.id === routeId);
+    if (!foundRoute) {
+      toast.error('Rota não encontrada');
+      navigate('/dashboard');
+      return;
+    }
 
+    const foundActivity = foundRoute.activities.find((a: any) => a.id === parseInt(activityId));
     if (!foundActivity) {
+      toast.error('Atividade não encontrada');
       navigate(`/study-route/${routeId}`);
       return;
     }
@@ -78,139 +80,105 @@ const StudyActivity = () => {
     setRoute(foundRoute);
     setActivity(foundActivity);
 
-    const savedNotes = userData?.notes?.[`${routeId}_${activityId}`];
-    if (savedNotes) {
-      setUserNotes(savedNotes);
-    }
-  }, [routeId, activityId, isAuthenticated, userData, navigate]);
+    const noteKey = `${routeId}_${activityId}`;
+    const existingNote = user.notes?.find((n: any) => n.key === noteKey);
+    if (existingNote) setNote(existingNote.content);
+  }, [authLoading, user, routeId, activityId, navigate]);
 
-  const startStudySession = () => {
-    setIsStudying(true);
-    setStudyStartTime(new Date());
-    toast.success('Sessão de estudo iniciada! Foco total! 🎯');
+  useEffect(() => {
+    let interval: any;
+    if (isRunning) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isRunning]);
+
+  const formatTime = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  const completeActivity = async () => {
-    if (!route || !activity) return;
+  const startTimer = () => {
+    setStudyStartTime(new Date());
+    setIsRunning(true);
+    toast.success('Sessão de estudo iniciada!');
+  };
 
-    const updatedRoute = { ...route };
-    const activityToUpdate = updatedRoute.activities.find((a) => a.id === activity.id);
-
-    if (activityToUpdate && !activityToUpdate.completed) {
-      activityToUpdate.completed = true;
-
-      if (userData) {
-        const key = `${routeId}_${activityId}`;
-        const updatedNotes = {
-          ...(userData.notes || {}),
-          [key]: userNotes,
-        };
-
-        const updatedUserData = {
-          ...userData,
-          routes: userData.routes.map((r: StudyRoute) =>
-            r.id === updatedRoute.id ? updatedRoute : r
-          ),
-          notes: updatedNotes,
-        };
-
-        await saveUserData(updatedUserData);
-      }
-
-      setRoute(updatedRoute);
-      setActivity(activityToUpdate);
-
-      let points = activity.difficulty === 'Difícil' ? 15 : activity.difficulty === 'Médio' ? 10 : 5;
-
-      if (studyStartTime) {
-        const studyTime = (new Date().getTime() - studyStartTime.getTime()) / (1000 * 60);
-        if (studyTime >= 25) points += 5;
-      }
-
-      updateUserPoints(points);
-      toast.success(`Atividade concluída! +${points} pontos! 🏆`);
-
-      setTimeout(() => {
-        navigate(`/study-route/${routeId}`);
-      }, 2000);
-    }
+  const pauseTimer = () => setIsRunning(false);
+  const stopTimer = () => {
+    setIsRunning(false);
+    setTimer(0);
+    setStudyStartTime(null);
   };
 
   const saveNotes = async () => {
-    if (userData) {
-      const key = `${routeId}_${activityId}`;
-      const updatedNotes = {
-        ...(userData.notes || {}),
-        [key]: userNotes,
-      };
-
-      await saveUserData({ ...userData, notes: updatedNotes });
-    }
-
-    toast.success('Notas salvas! 📝');
+    if (!user || !route || !activity) return;
+    const noteKey = `${routeId}_${activityId}`;
+    const updatedNotes = [
+      ...(user.notes?.filter((n: any) => n.key !== noteKey) || []),
+      { key: noteKey, content: note }
+    ];
+    await updateUser({ notes: updatedNotes });
+    toast.success('Anotação salva!');
   };
 
-  const desmark = async () => {
-    if (!route || !activity || !userData) return;
-
-    const updatedRoute = { ...route };
-    const activityToUpdate = updatedRoute.activities.find((a) => a.id === activity.id);
-
-    if (activityToUpdate && activityToUpdate.completed) {
-      activityToUpdate.completed = false;
-
-      const updatedUserData = {
-        ...userData,
-        routes: userData.routes.map((r: StudyRoute) =>
-          r.id === updatedRoute.id ? updatedRoute : r
-        ),
-      };
-
-      await saveUserData(updatedUserData);
-
-      setRoute(updatedRoute);
-      setActivity(activityToUpdate);
-
-      let points = activity.difficulty === 'Difícil' ? 15 : activity.difficulty === 'Médio' ? 10 : 5;
-
-      if (studyStartTime) {
-        const studyTime = (new Date().getTime() - studyStartTime.getTime()) / (1000 * 60);
-        if (studyTime >= 25) points += 5;
-      }
-
-      updateUserPoints(points * -1);
-      toast.success('Atividade marcada como não concluída. ❌');
+  const generateExplanation = async () => {
+    if (!activity) return;
+    setLoadingExplanation(true);
+    try {
+      const result = await pollinationsClient.generateDetailedExplanation(activity.content);
+      setDetailedExplanation(result);
+    } catch (e) {
+      toast.error('Erro ao gerar explicação');
+    } finally {
+      setLoadingExplanation(false);
     }
   };
 
-  const getTechniqueIcon = (technique: string) => {
-    if (technique.includes('Pomodoro')) return <Clock className="w-4 h-4" />;
-    if (technique.includes('Revisão')) return <Brain className="w-4 h-4" />;
-    if (technique.includes('Mapa')) return <Lightbulb className="w-4 h-4" />;
-    return <Target className="w-4 h-4" />;
-  };
+  const handleCompletion = async (complete: boolean) => {
+    if (!user || !route || !activity) return;
 
-  const getTechniqueColor = (technique: string) => {
-    if (technique.includes('Pomodoro')) return 'bg-red-100 text-red-800';
-    if (technique.includes('Revisão')) return 'bg-blue-100 text-blue-800';
-    if (technique.includes('Mapa')) return 'bg-purple-100 text-purple-800';
-    return 'bg-green-100 text-green-800';
-  };
+    const updatedRoute = {
+      ...route,
+      activities: route.activities.map((a: any) =>
+        a.id === activity.id ? { ...a, completed: complete } : a
+      ),
+      completedActivities: route.completedActivities + (complete ? 1 : -1)
+    };
 
-  const getDifficultyColor = (difficulty: string) => {
-    if (difficulty === 'Difícil') return 'bg-red-100 text-red-800';
-    if (difficulty === 'Médio') return 'bg-yellow-100 text-yellow-800';
-    return 'bg-green-100 text-green-800';
+    const updatedRoutes = user.routes.map((r: any) =>
+      r.id === route.id ? updatedRoute : r
+    );
+
+    const basePoints = activity.difficulty === 'Difícil' ? 30 : activity.difficulty === 'Médio' ? 20 : 10;
+    let bonus = 0;
+    if (studyStartTime) {
+      const minutes = (new Date().getTime() - studyStartTime.getTime()) / 60000;
+      if (minutes >= 25) bonus = 5;
+    }
+    const totalPoints = basePoints + bonus;
+
+    await updateUser({ routes: updatedRoutes, points: (user.points || 0) + (complete ? totalPoints : -totalPoints) });
+
+    toast.success(complete ? `Atividade concluída! +${totalPoints} pontos` : `Atividade desmarcada. -${totalPoints} pontos`);
+
+    setRoute(updatedRoute);
+    setActivity(updatedRoute.activities.find((a: any) => a.id === activity.id));
+    stopTimer();
+
+    if (complete) {
+      setTimeout(() => navigate(`/study-route/${route.id}`), 1500);
+    }
   };
 
   if (!route || !activity) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-        <Header />
-        <div className="container mx-auto px-4 py-8 text-center">
-          <p>Carregando atividade...</p>
-        </div>
-        <Footer />
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <BookOpen className='animate-pulse text-violet-600 w-8 h-8 mb-2' />
+        <p>Carregando atividade...</p>
       </div>
     );
   }
@@ -219,92 +187,57 @@ const StudyActivity = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:via-black dark:to-violet-900 dark:from-violet-900 dark:text-white">
       <Header />
       <div className="container mx-auto px-4 py-8">
-
-        <Button
-          variant="outline"
-          onClick={() => navigate(`/study-route/${routeId}`)}
-          className="mb-6 hover-lift dark:bg-[#1a1a1a]"
-        >
+        <Button variant="outline" onClick={() => navigate(`/study-route/${route.id}`)} className="mb-6 dark:bg-[#1a1a1a]">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar à Rota
         </Button>
 
-        <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-4">
-            <h1 className="text-4xl font-bold">{activity.title}</h1>
-            {activity.completed && (
-              <Badge className="bg-green-100 text-green-800">
-                <CheckCircle className="w-4 h-4 mr-1" />
-                Concluída
-              </Badge>
-            )}
-          </div>
-
-          <p className="text-xl text-muted-foreground mb-4">{activity.description}</p>
-
-          <div className="flex flex-wrap gap-3">
-            <Badge className={getTechniqueColor(activity.technique)}>
-              {getTechniqueIcon(activity.technique)}
-              <span className="ml-1">{activity.technique}</span>
-            </Badge>
-            <Badge className={getDifficultyColor(activity.difficulty)}>
-              {activity.difficulty}
-            </Badge>
-            <Badge variant="outline" className='dark:text-white'>
-              <Clock className="w-4 h-4 mr-1" />
-              {activity.duration}
-            </Badge>
-          </div>
-        </div>
-
-        {!activity.completed && (
-          <Card className="mb-8 bg-gradient-to-r from-primary/10 to-accent/10 border-0">
-            <CardContent className="p-6 flex justify-between items-center">
-              <div>
-                <h3 className="text-xl font-semibold mb-2">Sessão de Estudo</h3>
-                <p className="text-muted-foreground">
-                  {isStudying ? 'Estudo em andamento!' : 'Pronto para começar?'}
-                </p>
-              </div>
-              <Button
-                onClick={startStudySession}
-                disabled={isStudying}
-                className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
-              >
-                <Play className="w-4 h-4 mr-2" />
-                {isStudying ? 'Estudando...' : 'Iniciar Estudo'}
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-6">
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <BookOpen className="w-5 h-5 mr-2 text-primary" />
-                  Conteúdo para Estudo
-                </CardTitle>
+                <CardTitle>{activity.title}</CardTitle>
+                <CardDescription>{activity.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="flex gap-4">
+                <Badge className="bg-purple-100 text-purple-800">{activity.technique}</Badge>
+                <Badge className="bg-yellow-100 text-yellow-800">{activity.difficulty}</Badge>
+                <Badge variant="outline">
+                  <Clock className="w-4 h-4 mr-1" />
+                  {activity.duration}
+                </Badge>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex justify-between items-center">
+                <CardTitle>Conteúdo</CardTitle>
+                <Button onClick={generateExplanation} disabled={loadingExplanation} variant="outline">
+                  {loadingExplanation ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : <Lightbulb className="w-4 h-4 mr-2" />}
+                  Explicação
+                </Button>
               </CardHeader>
               <CardContent>
-                <p className="whitespace-pre-line text-muted-foreground leading-relaxed">
-                  {activity.content}
-                </p>
+                <p className="whitespace-pre-wrap text-muted-foreground">{activity.content}</p>
+                {detailedExplanation && (
+                  <div className="mt-4 p-4 bg-violet-100 dark:bg-violet-900 rounded-lg prose prose-violet dark:prose-invert max-w-none">
+                    <h4 className="font-semibold mb-4">Explicação Detalhada por IA</h4>
+                    <ReactMarkdown
+                      children={detailedExplanation}
+                      remarkPlugins={[remarkGfm, remarkMath]}
+                      rehypePlugins={[rehypeKatex, rehypeRaw, rehypeHighlight]}
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <PenTool className="w-5 h-5 mr-2 text-accent" />
-                  Exercícios Práticos
-                </CardTitle>
+                <CardTitle>Exercícios</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="whitespace-pre-line text-muted-foreground leading-relaxed">
-                  {activity.exercises}
-                </p>
+                <p className="whitespace-pre-wrap text-muted-foreground">{activity.exercises}</p>
               </CardContent>
             </Card>
           </div>
@@ -312,66 +245,49 @@ const StudyActivity = () => {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <PenTool className="w-5 h-5 mr-2 text-primary" />
-                  Suas Anotações
-                </CardTitle>
-                <CardDescription>
-                  Registre suas descobertas, dúvidas e insights
-                </CardDescription>
+                <CardTitle>Cronômetro de Estudo</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <Textarea
-                  placeholder="Digite suas anotações aqui..."
-                  value={userNotes}
-                  onChange={(e) => setUserNotes(e.target.value)}
-                  className="min-h-[200px] dark:text-black"
-                />
-                <Button onClick={saveNotes} variant="outline" className="w-full dark:text-black">
-                  Salvar Anotações
+              <CardContent className="text-center">
+                <div className="text-4xl font-mono font-bold mb-4">{formatTime(timer)}</div>
+                <div className="flex justify-center gap-2">
+                  <Button onClick={startTimer} disabled={isRunning} size="sm"><Play className="w-4 h-4" /></Button>
+                  <Button onClick={pauseTimer} disabled={!isRunning} size="sm" variant="outline"><Pause className="w-4 h-4" /></Button>
+                  <Button onClick={stopTimer} size="sm" variant="outline"><Square className="w-4 h-4" /></Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Anotações</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Textarea value={note} onChange={(e) => setNote(e.target.value)} className="min-h-[150px] dark:text-black mb-4" />
+                <Button onClick={saveNotes} className="w-full" variant="outline">
+                  <StickyNote className="w-4 h-4 mr-2" />
+                  Salvar Anotação
                 </Button>
               </CardContent>
             </Card>
 
-            {!activity.completed ? (
-              <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-green-800">
-                    <Trophy className="w-5 h-5 mr-2" />
-                    Finalizar Atividade
-                  </CardTitle>
-                  <CardDescription className="text-green-700">
-                    Marque como concluída quando terminar todo o conteúdo
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button
-                    onClick={completeActivity}
-                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Marcar como Concluída
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="bg-gradient-to-r from-primary to-accent text-white border-0">
-                <CardContent className="p-6 text-center">
-                  <Trophy className="w-12 h-12 mx-auto mb-3" />
-                  <h3 className="text-xl font-bold mb-2">Atividade Concluída!</h3>
-                  <p className="opacity-90">
-                    Parabéns pelo seu progresso! Continue assim.
-                  </p>
-                  <Button
-                    onClick={desmark}
-                    className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-green-700 hover:to-emerald-700"
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Marcar como Não Concluída
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+            <Card className={activity.completed ? 'bg-green-100' : 'bg-gradient-to-r from-green-600 to-emerald-600 text-white'}>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Trophy className="w-5 h-5 mr-2" />
+                  {activity.completed ? 'Atividade Concluída!' : 'Finalizar Atividade'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  onClick={() => handleCompletion(!activity.completed)}
+                  className="w-full"
+                  variant={activity.completed ? 'outline' : 'default'}
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  {activity.completed ? 'Desmarcar Conclusão' : 'Marcar como Concluída'}
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

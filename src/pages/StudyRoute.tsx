@@ -1,118 +1,121 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
+import { Progress } from '@/components/ui/progress';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import {
-  CheckCircle,
-  Clock,
-  Brain,
-  Target,
   ArrowLeft,
+  Clock,
   Trophy,
+  CheckCircle,
+  Circle,
   BookOpen,
   ExternalLink,
+  Brain,
 } from 'lucide-react';
 
-interface Activity {
-  id: number;
-  title: string;
-  description: string;
-  technique: string;
-  duration: string;
-  difficulty: string;
-  content: string;
-  completed: boolean;
-}
-
-interface StudyRoute {
-  id: string;
-  title: string;
-  subject: string;
-  dailyTime: string;
-  dedication: string;
-  activities: Activity[];
-  completedActivities: number;
-  createdAt: string;
-  description?: string;
-}
-
 const StudyRoute = () => {
-  const { id } = useParams();
-  const { isAuthenticated, user, userData, saveUserData, updateUserPoints } = useAuth();
+  const { routeId } = useParams();
   const navigate = useNavigate();
-  const [route, setRoute] = useState<StudyRoute | null>(null);
+  const { user, updateUser, loading: authLoading } = useAuth();
+  const [route, setRoute] = useState<any | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated || !userData) {
+    if (authLoading) return;
+
+    if (!user) {
       navigate('/login');
       return;
     }
 
-    const foundRoute = userData.routes?.find((r: StudyRoute) => r.id === id);
+    // Aguarda rotas carregarem
+    if (!user.routes || user.routes.length === 0) {
+      console.log("Rotas ainda não carregadas ou estão vazias.");
+      return;
+    }
+
+    console.log("Rotas disponíveis:", user.routes.map(r => r.id));
+    console.log("ID da rota da URL:", routeId);
+
+    const foundRoute = user.routes.find((r: any) => String(r.id) === String(routeId));
+
     if (foundRoute) {
       setRoute(foundRoute);
     } else {
+      console.warn("Rota não encontrada com o ID:", routeId);
+      toast.error("Rota não encontrada.");
       navigate('/dashboard');
     }
-  }, [id, isAuthenticated, userData, navigate]);
+  }, [authLoading, user, routeId, navigate]);
 
-  const completeActivity = async (activityId: number) => {
-    if (!route || !userData || !user) return;
 
-    const updatedActivities = route.activities.map((activity) =>
-      activity.id === activityId ? { ...activity, completed: true } : activity
-    );
+
+
+
+  const toggleActivityCompleted = async (activityId: number) => {
+    if (!user || !route) return;
+
+    const activity = route.activities.find((a: any) => a.id === activityId);
+    if (!activity) return;
+
+    const isCompleted = activity.completed;
 
     const updatedRoute = {
       ...route,
-      activities: updatedActivities
+      activities: route.activities.map((a: any) =>
+        a.id === activityId ? { ...a, completed: !isCompleted } : a
+      ),
+      completedActivities: route.completedActivities + (isCompleted ? -1 : 1),
     };
 
-    const updatedRoutes = userData.routes.map((r: StudyRoute) =>
-      r.id === updatedRoute.id ? updatedRoute : r
+    const updatedRoutes = user.routes.map((r: any) =>
+      r.id === route.id ? updatedRoute : r
     );
 
-    await saveUserData({ ...userData, routes: updatedRoutes });
+    const basePoints = activity.difficulty === 'Difícil' ? 30 : activity.difficulty === 'Médio' ? 20 : 10;
+    const updatedPoints = (user.points || 0) + (isCompleted ? -basePoints : basePoints);
 
-    // Verifica pontos
-    const completedActivity = updatedActivities.find(a => a.id === activityId);
-    const difficulty = completedActivity?.difficulty;
-    const points =
-      difficulty === 'Difícil' ? 15 :
-        difficulty === 'Médio' ? 10 : 5;
-
-    const newPoints = (user.points ?? 0) + points;
-    await updateUserPoints(newPoints);
+    await updateUser({
+      routes: updatedRoutes,
+      points: Math.max(updatedPoints, 0),
+    });
 
     setRoute(updatedRoute);
-    toast.success(`Atividade concluída! +${points} pontos! 🎉`);
-  };
 
-
-
-
-  const getTechniqueIcon = (technique: string) => {
-    if (technique.includes('Pomodoro')) return <Clock className="w-4 h-4" />;
-    if (technique.includes('Revisão')) return <Brain className="w-4 h-4" />;
-    return <Target className="w-4 h-4" />;
+    toast.success(isCompleted
+      ? `Atividade desmarcada (-${basePoints} pontos)`
+      : `Atividade concluída! +${basePoints} pontos 🎉`
+    );
   };
 
   const getTechniqueColor = (technique: string) => {
-    if (technique.includes('Pomodoro')) return 'bg-red-100 text-red-800';
-    if (technique.includes('Revisão')) return 'bg-blue-100 text-blue-800';
+    const lower = technique.toLowerCase();
+    if (lower.includes('pomodoro')) return 'bg-red-100 text-red-800';
+    if (lower.includes('revisão')) return 'bg-blue-100 text-blue-800';
+    if (lower.includes('resumo')) return 'bg-purple-100 text-purple-800';
     return 'bg-green-100 text-green-800';
   };
 
   const getDifficultyColor = (difficulty: string) => {
-    if (difficulty === 'Difícil') return 'bg-red-100 text-red-800';
-    if (difficulty === 'Médio') return 'bg-yellow-100 text-yellow-800';
+    const lower = difficulty.toLowerCase();
+    if (lower.includes('difícil')) return 'bg-red-100 text-red-800';
+    if (lower.includes('médio')) return 'bg-yellow-100 text-yellow-800';
     return 'bg-green-100 text-green-800';
   };
+
+  if (authLoading || !route) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <Brain className='animate-spin text-violet-600'></Brain>
+        <p>Carregando seus dados...</p>
+      </div>
+    );
+  }
 
   if (!route) {
     return (
@@ -126,9 +129,8 @@ const StudyRoute = () => {
     );
   }
 
-  const completedCount = route.activities.filter((a) => a.completed).length;
+  const completedCount = route.activities.filter((a: any) => a.completed).length;
   const progressPercentage = Math.round((completedCount / route.activities.length) * 100);
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:via-black dark:to-violet-900 dark:from-violet-900 dark:text-white">
@@ -154,7 +156,7 @@ const StudyRoute = () => {
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
                 <div>
-                  <div className="text-3xl font-bold text-primary mb-1">{completedCount}%</div>
+                  <div className="text-3xl font-bold text-primary mb-1">{progressPercentage}%</div>
                   <p className="text-sm text-muted-foreground">Progresso</p>
                 </div>
                 <div>
@@ -178,12 +180,7 @@ const StudyRoute = () => {
               </div>
 
               <div className="mt-6">
-                <div className="w-full bg-white rounded-full h-3">
-                  <div
-                    className="bg-gradient-to-r from-primary to-accent h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${progressPercentage}%` }}
-                  />
-                </div>
+                <Progress value={progressPercentage} className="h-3" />
               </div>
             </CardContent>
           </Card>
@@ -196,7 +193,7 @@ const StudyRoute = () => {
             Atividades do Plano
           </h2>
 
-          {route.activities.map((activity, index) => (
+          {route.activities.map((activity: any, index: number) => (
             <Card
               key={activity.id}
               className={`hover-lift transition-all duration-300 ${activity.completed ? 'bg-green-50 border-green-200' : 'bg-white'
@@ -209,7 +206,11 @@ const StudyRoute = () => {
                     <div>
                       <CardTitle className="flex items-center space-x-2">
                         <span>{activity.title}</span>
-                        {activity.completed && <CheckCircle className="w-5 h-5 text-green-500" />}
+                        {activity.completed ? (
+                          <CheckCircle className="w-5 h-5 text-green-500" />
+                        ) : (
+                          <Circle className="w-5 h-5 text-muted-foreground" />
+                        )}
                       </CardTitle>
                       <CardDescription>{activity.description}</CardDescription>
                     </div>
@@ -217,8 +218,7 @@ const StudyRoute = () => {
 
                   <div className="flex flex-col items-end space-y-2">
                     <Badge className={getTechniqueColor(activity.technique)}>
-                      {getTechniqueIcon(activity.technique)}
-                      <span className="ml-1">{activity.technique}</span>
+                      {activity.technique}
                     </Badge>
                     <Badge className={getDifficultyColor(activity.difficulty)}>
                       {activity.difficulty}
@@ -240,23 +240,24 @@ const StudyRoute = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => navigate(`/study-activity/${route.id}/${activity.id}`)}
+                      onClick={() =>
+                        navigate(`/study-activity/${route.id}/${activity.id}`)
+                      }
                       className="dark:bg-[#1a1a1a] hover:opacity-30 transition hover:scale-[1.030]"
                     >
                       <ExternalLink className="w-4 h-4 mr-1" />
                       Estudar Conteúdo
                     </Button>
 
-                    {!activity.completed && (
-                      <Button
-                        size="sm"
-                        onClick={() => completeActivity(activity.id)}
-                        className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
-                      >
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        Marcar como Completa
-                      </Button>
-                    )}
+                    <Button
+                      size="sm"
+                      onClick={() => toggleActivityCompleted(activity.id)}
+                      className={`bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 ${activity.completed ? 'opacity-70' : ''
+                        }`}
+                    >
+                      <CheckCircle className="w-4 h-4 mr-1" />
+                      {activity.completed ? 'Desconcluir' : 'Concluir'}
+                    </Button>
                   </div>
                 </div>
 

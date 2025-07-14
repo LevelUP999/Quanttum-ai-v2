@@ -21,7 +21,7 @@ const Logo = ({ className = '', size = 'md', textVisible = true }: LogoProps) =>
   };
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div className={`flex items-center gap-2 animate-float ${className}`}>
       <div className={`relative ${sizes[size]}`}>
         {/* Brain icon */}
         <svg className="w-full h-full text-violet-700" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

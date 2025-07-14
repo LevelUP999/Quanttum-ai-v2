@@ -146,6 +146,14 @@ export default {
 					'50%': {
 						backgroundPosition: '100% 50%'
 					}
+				},
+				'leftright': {
+					'0%, 100%': {
+						rotate: '-15deg'
+					},
+					'50%': {
+						rotate: '45deg'
+					}
 				}
 			},
 			animation: {
@@ -154,9 +162,10 @@ export default {
 				'fade-in': 'fade-in 0.6s ease-out',
 				'slide-up': 'slide-up 0.8s ease-out',
 				'float': 'float 3s ease-in-out infinite',
-				'gradient-shift': 'gradient-shift 3s ease-in-out infinite'
+				'gradient-shift': 'gradient-shift 3s ease-in-out infinite',
+				'leftright': 'leftright 3s ease-in-out infinite'
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [require("tailwindcss-animate"), require('@tailwindcss/typography')],
 } satisfies Config;

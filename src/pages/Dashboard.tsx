@@ -192,7 +192,7 @@ const Dashboard = () => {
                         <span>{new Date(route.created_at).toLocaleDateString()}</span>
                       </div>
 
-                      <Button className="w-full mt-2" variant="outline">
+                      <Button className="text-white w-full mt-2 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 hover:scale-[1.05] transition dark:border-0" variant="outline">
                         Continuar Estudos
                       </Button>
                     </div>

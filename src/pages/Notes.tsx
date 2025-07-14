@@ -184,7 +184,7 @@ const Notes = () => {
 
                 <CardContent>
                   <div className="bg-muted/30 rounded-lg p-4 mb-4">
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-4">
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-4 dark:text-white">
                       {note.content}
                     </p>
                   </div>

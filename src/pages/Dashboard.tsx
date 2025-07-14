@@ -97,7 +97,7 @@ const Dashboard = () => {
                   <p className="text-sm font-medium text-muted-foreground">Rotas de Estudo</p>
                   <p className="text-3xl font-bold text-primary">{routes.length}</p>
                 </div>
-                <Target className="w-8 h-8 text-primary" />
+                <Target className="w-8 h-8 text-primary animate-float" />
               </div>
             </CardContent>
           </Card>
@@ -109,7 +109,7 @@ const Dashboard = () => {
                   <p className="text-sm font-medium text-muted-foreground">Pontos</p>
                   <p className="text-3xl font-bold text-accent">{user?.points || 0}</p>
                 </div>
-                <Trophy className="w-8 h-8 text-accent" />
+                <Trophy className="w-8 h-8 text-accent animate-float" />
               </div>
             </CardContent>
           </Card>
@@ -121,7 +121,7 @@ const Dashboard = () => {
                   <p className="text-sm font-medium text-muted-foreground">Progresso Total</p>
                   <p className="text-3xl font-bold text-primary">{Math.round(progressPercentage)}%</p>
                 </div>
-                <Clock className="w-8 h-8 text-primary" />
+                <Clock className="w-8 h-8 text-primary animate-float" />
               </div>
               <Progress value={progressPercentage} className="mt-4" />
             </CardContent>

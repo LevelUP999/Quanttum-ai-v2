@@ -252,7 +252,7 @@ const StudyRoute = () => {
                       className={`bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 w-full sm:w-auto ${activity.completed ? 'opacity-70' : ''}`}
                     >
                       <CheckCircle className="w-4 h-4 mr-1" />
-                      {activity.completed ? 'Desconcluir' : 'Concluir'}
+                      {activity.completed ? 'Desmarcar como CONCLUIDO' : 'Marcar como CONCLUIDO'}
                     </Button>
                   </div>
 

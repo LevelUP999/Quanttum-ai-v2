@@ -1,5 +1,13 @@
 
 import React from 'react';
+import { toast } from '@/hooks/use-toast';
+
+const easterEgg = () => {
+  toast({
+    title: "🚀 EasterEGG 😂",
+    description: "Site criado por Gustavo Rodrigues Cunha & Matheus César Pereira de Vasconcelos",
+  });
+}
 
 interface LogoProps {
   className?: string;
@@ -21,7 +29,7 @@ const Logo = ({ className = '', size = 'md', textVisible = true }: LogoProps) =>
   };
 
   return (
-    <div className={`flex items-center gap-2 animate-float ${className}`}>
+    <div className={`flex items-center gap-2 animate-float ${className}`} onClick={() => { easterEgg() }}>
       <div className={`relative ${sizes[size]}`}>
         {/* Brain icon */}
         <svg className="w-full h-full text-violet-700" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

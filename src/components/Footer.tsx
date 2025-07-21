@@ -9,7 +9,7 @@ const Footer: React.FC = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-4">
-            <Logo size="md" />
+            <Logo size="md"/>
             <p className="text-muted-foreground dark:text-gray-400 max-w-md">
               Transforme sua forma de estudar com inteligência artificial.
               Planos personalizados e cientificamente comprovados para o seu sucesso.
@@ -17,7 +17,7 @@ const Footer: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            <h3 className="font-semibold">Recursos</h3>
+            <h3 className="font-semibold gradient-text">Recursos</h3>
             <ul className="space-y-2 text-muted-foreground dark:text-gray-400">
               <li>• Revisão Espaçada</li>
               <li>• Técnica Pomodoro</li>
@@ -27,7 +27,7 @@ const Footer: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            <h3 className="font-semibold">Redes Sociais</h3>
+            <h3 className="font-semibold gradient-text">Redes Sociais</h3>
             <div className="flex space-x-4">
               <div className="p-2 bg-white dark:bg-gray-700 rounded-full shadow-sm cursor-pointer hover:shadow-md transition-shadow opacity-50">
                 <Youtube className="w-5 h-5 text-red-500" />
@@ -42,8 +42,8 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="border-t border-border dark:border-gray-700 mt-8 pt-8 text-center text-muted-foreground dark:text-gray-500">
-          <p>&copy; {new Date().getFullYear()} Quanttun AI. Todos os direitos reservados.</p>
+        <div className="mt-8 pt-8 text-center text-muted-foreground dark:text-gray-500 font-bold">
+          <p>&copy; {new Date().getFullYear()} <strong className="gradient-text">Quanttun AI</strong>. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>

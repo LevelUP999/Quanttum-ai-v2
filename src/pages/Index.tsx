@@ -6,6 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Brain, Clock, Target, Trophy, Zap, Users } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from '@/hooks/use-toast';
+
+const easterEgg = () => {
+  toast({
+    title: "🚀 EasterEGG 😂",
+    description: "Site criado por Gustavo Rodrigues Cunha & Matheus César Pereira de Vasconcelos",
+  });
+}
 
 const Index = () => {
   return (
@@ -18,7 +27,7 @@ const Index = () => {
           <div className="animate-fade-in">
             <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
               Transforme sua forma de
-              <span className="gradient-text block">estudar com IA</span>
+              <span className="gradient-text block" onClick={() => { easterEgg() }}>Estudar com IA</span>
             </h1>
 
             <p className="text-xl md:text-2xl text-muted-foreground dark:text-gray-300 mb-8 max-w-2xl mx-auto">
@@ -40,7 +49,7 @@ const Index = () => {
                 variant="outline"
                 size="lg"
                 className="px-8 py-4 text-lg font-semibold hover-lift w-full sm:w-auto text-black"
-                onClick={() => {document.querySelector(".functionalTutorialSpray")?.scrollIntoView({ behavior: "smooth" });}}
+                onClick={() => { document.querySelector(".functionalTutorialSpray")?.scrollIntoView({ behavior: "smooth" }); }}
               >
                 Ver Como Funciona
               </Button>
@@ -87,7 +96,7 @@ const Index = () => {
       <section className="container mx-auto px-4 py-20">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold mb-4">
-            Técnicas <span className="gradient-text">Cientificamente Comprovadas</span>
+            Técnicas <span className="gradient-text" onClick={() => { easterEgg() }}>Cientificamente Comprovadas</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Nossa IA utiliza métodos validados pela neurociência para maximizar sua retenção e aprendizado
@@ -144,7 +153,7 @@ const Index = () => {
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-4xl mx-auto text-white">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Você está indo muito bem! 🚀
+              Você está indo muito bem! <strong onClick={() => { easterEgg() }}>🚀</strong>
             </h2>
             <p className="text-xl md:text-2xl mb-8 opacity-90">
               Cada pequeno passo conta. Vamos conquistar mais um objetivo hoje?
@@ -175,7 +184,7 @@ const Index = () => {
       <section className="container mx-auto px-4 py-20">
         <div className="text-center max-w-3xl mx-auto">
           <h2 className="text-4xl font-bold mb-6">
-            Pronto para <span className="gradient-text">revolucionar</span> seus estudos?
+            Pronto para <span className="gradient-text" onClick={() => { easterEgg() }}>revolucionar</span> seus estudos?
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
             Junte-se a milhares de estudantes que já transformaram sua forma de aprender
